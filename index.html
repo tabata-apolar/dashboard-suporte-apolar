@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard Suporte — 1T 2026 | Apolar Imóveis</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue-dark:  #1F3864;
+    --blue-mid:   #2E75B6;
+    --blue-light: #D6E4F0;
+    --orange:     #C55A11;
+    --orange-lt:  #FCE4D6;
+    --red:        #C00000;
+    --red-lt:     #FCE4E4;
+    --green:      #375623;
+    --green-lt:   #E2EFDA;
+    --yellow:     #F0A500;
+    --yellow-lt:  #FFF3CD;
+    --gray-bg:    #F4F6FA;
+    --gray-card:  #FFFFFF;
+    --gray-border:#E2E8F0;
+    --text-dark:  #1A202C;
+    --text-mid:   #4A5568;
+    --text-light: #718096;
+  }
+
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: var(--gray-bg);
+    color: var(--text-dark);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
+    padding: 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(31,56,100,0.3);
+  }
+  .header-left h1 {
+    font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.3px;
+  }
+  .header-left p {
+    font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.7); margin-top: 2px;
+  }
+  .header-right {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .badge {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 11px; font-weight: 600;
+    padding: 4px 12px; border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+
+  /* ── LAYOUT ── */
+  .main { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--text-light);
+    margin: 28px 0 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-label::after {
+    content: ''; flex: 1; height: 1px; background: var(--gray-border);
+  }
+
+  /* ── KPI STRIP ── */
+  .kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .kpi {
+    background: var(--gray-card);
+    border-radius: 12px;
+    padding: 16px 18px;
+    border: 1px solid var(--gray-border);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: var(--kpi-color, var(--blue-mid));
+  }
+  .kpi-label {
+    font-size: 10px; font-weight: 600; color: var(--text-light);
+    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;
+  }
+  .kpi-value {
+    font-size: 28px; font-weight: 800; color: var(--kpi-color, var(--blue-dark));
+    line-height: 1;
+  }
+  .kpi-sub {
+    font-size: 10px; font-weight: 500; color: var(--text-light); margin-top: 4px;
+  }
+  .kpi-delta {
+    font-size: 11px; font-weight: 700;
+    padding: 2px 7px; border-radius: 10px; display: inline-block; margin-top: 4px;
+  }
+  .kpi-delta.up   { background: var(--red-lt);   color: var(--red);   }
+  .kpi-delta.down { background: var(--green-lt);  color: var(--green); }
+  .kpi-delta.info { background: var(--blue-light); color: var(--blue-mid); }
+
+  /* ── GRID ── */
+  .grid-2    { display: grid; grid-template-columns: 1fr 1fr;       gap: 16px; }
+  .grid-3    { display: grid; grid-template-columns: 1fr 1fr 1fr;   gap: 16px; }
+  .grid-2-1  { display: grid; grid-template-columns: 2fr 1fr;       gap: 16px; }
+  .grid-1-2  { display: grid; grid-template-columns: 1fr 2fr;       gap: 16px; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--gray-card);
+    border-radius: 12px;
+    border: 1px solid var(--gray-border);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 14px 20px 10px;
+    border-bottom: 1px solid var(--gray-border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .card-title {
+    font-size: 12px; font-weight: 700; color: var(--blue-dark); letter-spacing: 0.2px;
+  }
+  .card-tag {
+    font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 8px;
+    background: var(--blue-light); color: var(--blue-mid);
+  }
+  .card-body { padding: 16px 20px; }
+  .card-body.no-pad { padding: 0; }
+
+  /* ── CHART CONTAINERS ── */
+  .chart-wrap { position: relative; }
+  .chart-wrap.h200 { height: 200px; }
+  .chart-wrap.h220 { height: 220px; }
+  .chart-wrap.h250 { height: 250px; }
+  .chart-wrap.h280 { height: 280px; }
+
+  /* ── RANK LIST ── */
+  .rank-list { display: flex; flex-direction: column; gap: 6px; }
+  .rank-item {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .rank-num {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--blue-dark); color: #fff;
+    font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .rank-bar-wrap { flex: 1; }
+  .rank-label {
+    font-size: 10px; font-weight: 600; color: var(--text-dark); margin-bottom: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px;
+  }
+  .rank-bar-bg {
+    height: 5px; background: var(--gray-bg); border-radius: 3px; overflow: hidden;
+  }
+  .rank-bar-fill {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--blue-mid), #5BA4E5);
+  }
+  .rank-val {
+    font-size: 11px; font-weight: 700; color: var(--blue-dark);
+    min-width: 30px; text-align: right;
+  }
+
+  /* ── TAG PILLS ── */
+  .tag-section { margin-bottom: 14px; }
+  .tag-section-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .pills-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill {
+    font-size: 10px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px;
+    display: flex; align-items: center; gap: 5px;
+    cursor: default;
+  }
+  .pill .pill-count {
+    background: rgba(0,0,0,0.12); border-radius: 10px;
+    padding: 1px 5px; font-size: 9px;
+  }
+
+  /* ── ALERT CARDS ── */
+  .alerts-grid { display: flex; flex-direction: column; gap: 8px; }
+  .alert-card {
+    border-radius: 8px; padding: 12px 14px;
+    display: flex; gap: 12px; align-items: flex-start;
+    border-left: 3px solid;
+  }
+  .alert-card.red    { background: var(--red-lt);    border-color: var(--red);    }
+  .alert-card.orange { background: var(--orange-lt); border-color: var(--orange); }
+  .alert-card.yellow { background: var(--yellow-lt); border-color: var(--yellow); }
+  .alert-card.blue   { background: var(--blue-light); border-color: var(--blue-mid); }
+  .alert-icon { font-size: 16px; line-height: 1; flex-shrink: 0; margin-top: 1px; }
+  .alert-title {
+    font-size: 11px; font-weight: 700; margin-bottom: 3px;
+  }
+  .alert-card.red    .alert-title { color: var(--red);    }
+  .alert-card.orange .alert-title { color: var(--orange); }
+  .alert-card.yellow .alert-title { color: #855900;       }
+  .alert-card.blue   .alert-title { color: var(--blue-mid); }
+  .alert-desc { font-size: 10px; font-weight: 500; color: var(--text-mid); line-height: 1.5; }
+
+  /* ── ACTION TABLE ── */
+  .action-table { width: 100%; border-collapse: collapse; }
+  .action-table th {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--text-light);
+    padding: 8px 12px; background: var(--gray-bg);
+    border-bottom: 1px solid var(--gray-border);
+    text-align: left;
+  }
+  .action-table td {
+    font-size: 11px; font-weight: 500; color: var(--text-dark);
+    padding: 10px 12px; border-bottom: 1px solid var(--gray-border);
+    vertical-align: top;
+  }
+  .action-table tr:last-child td { border-bottom: none; }
+  .action-table tr:nth-child(even) td { background: var(--gray-bg); }
+  .priority {
+    font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 10px;
+    white-space: nowrap;
+  }
+  .priority.alta    { background: var(--red-lt);    color: var(--red);    }
+  .priority.media   { background: var(--orange-lt); color: var(--orange); }
+  .priority.processo{ background: var(--blue-light); color: var(--blue-mid); }
+  .priority.cap     { background: var(--green-lt);  color: var(--green);  }
+  .impact-bar {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .impact-fill {
+    height: 6px; border-radius: 3px; background: var(--blue-mid);
+  }
+  .impact-pct { font-size: 10px; font-weight: 700; color: var(--blue-mid); }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center; padding: 20px;
+    font-size: 10px; font-weight: 500; color: var(--text-light);
+    border-top: 1px solid var(--gray-border); margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <h1>Dashboard de Suporte — Apolar Imóveis</h1>
+    <p>Análise de Tickets · Primeiro Trimestre 2026 · Base: 1.503 tickets</p>
+  </div>
+  <div class="header-right">
+    <span class="badge">Jan–Mar 2026</span>
+    <span class="badge">Movidesk</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- KPIs -->
+  <div class="section-label">Indicadores Gerais</div>
+  <div class="kpi-strip">
+    <div class="kpi" style="--kpi-color:#2E75B6">
+      <div class="kpi-label">Total de Tickets</div>
+      <div class="kpi-value">1.503</div>
+      <div class="kpi-sub">Jan–Mar 2026</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#C55A11">
+      <div class="kpi-label">Tickets em Março</div>
+      <div class="kpi-value">600</div>
+      <span class="kpi-delta up">+32,9% vs média</span>
+    </div>
+    <div class="kpi" style="--kpi-color:#C00000">
+      <div class="kpi-label">Bugs Confirmados</div>
+      <div class="kpi-value">56</div>
+      <div class="kpi-sub">CRM (37) + Contrato (15) + outros (4)</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#375623">
+      <div class="kpi-label">Tickets de Orientação</div>
+      <div class="kpi-value">155</div>
+      <span class="kpi-delta up">+109% vs jan</span>
+    </div>
+    <div class="kpi" style="--kpi-color:#1F3864">
+      <div class="kpi-label">Credenciamentos</div>
+      <div class="kpi-value">238</div>
+      <div class="kpi-sub">15,8% do total</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#F0A500">
+      <div class="kpi-label">Redução c/ Endereços</div>
+      <div class="kpi-value">12,5%</div>
+      <div class="kpi-sub">188 tickets elimináveis</div>
+    </div>
+  </div>
+
+  <!-- EVOLUÇÃO MENSAL -->
+  <div class="section-label">Evolução Mensal</div>
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Volume Total de Tickets por Mês</span>
+        <span class="card-tag">Jan–Mar</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h250">
+          <canvas id="chartMensal"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Tickets por Categoria e Mês</span>
+        <span class="card-tag">Empilhado</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h250">
+          <canvas id="chartCategoria"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SERVIÇOS E TAGS -->
+  <div class="section-label">Serviços e Tags</div>
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Top 10 Serviços — Total 1T 2026</span>
+        <span class="card-tag">Ranking</span>
+      </div>
+      <div class="card-body">
+        <div class="rank-list" id="rankServicos"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Principais Tags</span>
+        <span class="card-tag">Distribuição</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200">
+          <canvas id="chartTags"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAGS QUALITATIVAS -->
+  <div class="section-label">Tags Qualitativas — Bugs, Orientação & Treinamento</div>
+  <div class="grid-3">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--red)">🐛 Erros de Sistema (Bug)</span>
+        <span class="card-tag" style="background:var(--red-lt);color:var(--red)">69 tickets</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:12px">
+          <canvas id="chartBugs"></canvas>
+        </div>
+        <div class="pills-wrap">
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Leads retidos <span class="pill-count">8</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Distrib. Leads <span class="pill-count">8</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Agenda CRM <span class="pill-count">5</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Contrato <span class="pill-count">4</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Integração Leads <span class="pill-count">4</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Portal fora do ar <span class="pill-count">3</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--blue-mid)">📘 Orientação</span>
+        <span class="card-tag">155 tickets · crescendo</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:12px">
+          <canvas id="chartOrientacao"></canvas>
+        </div>
+        <div class="pills-wrap">
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Opção de Venda <span class="pill-count">31</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Proposta <span class="pill-count">10</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Problemas CRM <span class="pill-count">7</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Contrato <span class="pill-count">7</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Foto Corrompida <span class="pill-count">6</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Credenciamento <span class="pill-count">5</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--green)">🎓 Necessita Treinamento</span>
+        <span class="card-tag" style="background:var(--green-lt);color:var(--green)">31 tickets</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:12px">
+          <canvas id="chartTreinamento"></canvas>
+        </div>
+        <div class="pills-wrap">
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">Opção de Venda <span class="pill-count">9</span></div>
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">CRM Sales <span class="pill-count">5</span></div>
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">Clique Apolar <span class="pill-count">3</span></div>
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">Novo Colaborador <span class="pill-count">3</span></div>
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">Proposta <span class="pill-count">2</span></div>
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">Reserva <span class="pill-count">1</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ALERTAS -->
+  <div class="section-label">Alertas</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">⚠️ Alertas Ativos</span>
+      </div>
+      <div class="card-body">
+        <div class="alerts-grid">
+          <div class="alert-card red">
+            <div class="alert-icon">🔴</div>
+            <div>
+              <div class="alert-title">CRM Apolar Sales — Degradação Sistêmica</div>
+              <div class="alert-desc">37 bugs confirmados no trimestre, sendo 20 apenas em março (+233% vs fev). Leads retidos, distribuição incorreta e integração com portais comprometida. Múltiplas franquias afetadas simultaneamente.</div>
+            </div>
+          </div>
+          <div class="alert-card orange">
+            <div class="alert-icon">🟠</div>
+            <div>
+              <div class="alert-title">Módulo de Contrato — Bugs sem Classificação</div>
+              <div class="alert-desc">15 bugs identificados (4 com tag + 11 sem tag classificados como Problema). Falha na liberação de ganchos, boleto não gerado, transferência de saldo com erro. Requer validação técnica individual.</div>
+            </div>
+          </div>
+          <div class="alert-card orange">
+            <div class="alert-icon">🟠</div>
+            <div>
+              <div class="alert-title">Portal Apolar — Instabilidade Recorrente</div>
+              <div class="alert-desc">+350% em tickets de site fora do ar em março. Área restrita inacessível, imóveis não publicados pós-atualização. Padrão de deploy sem comunicação prévia à rede.</div>
+            </div>
+          </div>
+          <div class="alert-card yellow">
+            <div class="alert-icon">🟡</div>
+            <div>
+              <div class="alert-title">Operação Paraguai — Sem Suporte Estruturado</div>
+              <div class="alert-desc">10 tickets em março (mês de estreia), todos sem processo de onboarding. Problemas com sistema Lyra e acessos. Risco de crescimento descontrolado sem protocolo definido.</div>
+            </div>
+          </div>
+          <div class="alert-card blue">
+            <div class="alert-icon">🔵</div>
+            <div>
+              <div class="alert-title">Tag "Orientação" em crescimento contínuo</div>
+              <div class="alert-desc">De 33 (jan) para 69 (mar), +109% em 3 meses. Indica demanda crescente por capacitação e documentação. Concentrado em Opção de Venda e CRM Sales.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AÇÕES -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">✅ Plano de Ação</span>
+        <span class="card-tag">6 ações priorizadas</span>
+      </div>
+      <div class="card-body no-pad">
+        <table class="action-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Ação</th>
+              <th>Prioridade</th>
+              <th>Impacto</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1</strong></td>
+              <td>
+                <strong>Integração base de endereços em tempo real</strong><br>
+                <span style="color:var(--text-light);font-size:10px">Elimina tickets de cadastro/ajuste de endereço</span>
+              </td>
+              <td><span class="priority alta">Alta</span></td>
+              <td>
+                <div class="impact-bar">
+                  <div class="impact-fill" style="width:125px"></div>
+                  <span class="impact-pct">−12,5%</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>2</strong></td>
+              <td>
+                <strong>Postmortem CRM Apolar Sales</strong><br>
+                <span style="color:var(--text-light);font-size:10px">Investigar regressão no motor de distribuição de leads</span>
+              </td>
+              <td><span class="priority alta">Alta</span></td>
+              <td>
+                <div class="impact-bar">
+                  <div class="impact-fill" style="width:100px"></div>
+                  <span class="impact-pct">−37 bugs</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>3</strong></td>
+              <td>
+                <strong>Revisão dos bugs sem tag no Contrato</strong><br>
+                <span style="color:var(--text-light);font-size:10px">Validar e corrigir 11 tickets classificados como Problema</span>
+              </td>
+              <td><span class="priority media">Média</span></td>
+              <td>
+                <div class="impact-bar">
+                  <div class="impact-fill" style="width:55px;background:var(--orange)"></div>
+                  <span class="impact-pct" style="color:var(--orange)">−15 bugs</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>4</strong></td>
+              <td>
+                <strong>Protocolo de comunicação pré-deploy</strong><br>
+                <span style="color:var(--text-light);font-size:10px">Avisar rede antes de atualizações no Portal Apolar</span>
+              </td>
+              <td><span class="priority processo">Processo</span></td>
+              <td>
+                <div class="impact-bar">
+                  <div class="impact-fill" style="width:45px;background:var(--blue-mid)"></div>
+                  <span class="impact-pct">Risco</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>5</strong></td>
+              <td>
+                <strong>Capacitação: Opção de Venda + CRM Sales</strong><br>
+                <span style="color:var(--text-light);font-size:10px">Vídeos, FAQ e webinar mensal para a rede</span>
+              </td>
+              <td><span class="priority cap">Capacitação</span></td>
+              <td>
+                <div class="impact-bar">
+                  <div class="impact-fill" style="width:90px;background:var(--green)"></div>
+                  <span class="impact-pct" style="color:var(--green)">~−186 tk</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>6</strong></td>
+              <td>
+                <strong>Onboarding Paraguai + sistema Lyra</strong><br>
+                <span style="color:var(--text-light);font-size:10px">Roteiro de entrada para franquias internacionais</span>
+              </td>
+              <td><span class="priority processo">Processo</span></td>
+              <td>
+                <div class="impact-bar">
+                  <div class="impact-fill" style="width:30px;background:var(--blue-mid)"></div>
+                  <span class="impact-pct">Expansão</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Apolar Imóveis · Dashboard de Suporte 1T 2026 · Dados: Movidesk · Atualizado em 30/03/2026
+</div>
+
+<script>
+const BLUE_DARK  = '#1F3864';
+const BLUE_MID   = '#2E75B6';
+const BLUE_LIGHT = '#D6E4F0';
+const ORANGE     = '#C55A11';
+const RED        = '#C00000';
+const GREEN      = '#375623';
+const YELLOW     = '#F0A500';
+const GRAY       = '#E2E8F0';
+
+const defaultFont = { family: 'Montserrat' };
+Chart.defaults.font.family = 'Montserrat';
+Chart.defaults.font.size   = 11;
+Chart.defaults.color       = '#4A5568';
+
+// ── 1. EVOLUÇÃO MENSAL ────────────────────────────────────────────────────────
+new Chart(document.getElementById('chartMensal'), {
+  type: 'bar',
+  data: {
+    labels: ['Janeiro', 'Fevereiro', 'Março'],
+    datasets: [{
+      label: 'Tickets',
+      data: [435, 468, 600],
+      backgroundColor: [BLUE_MID, BLUE_MID, ORANGE],
+      borderRadius: 6,
+      barThickness: 52,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          afterLabel: (ctx) => {
+            const deltas = ['—', '+7,6%', '+28,2%'];
+            return `Variação: ${deltas[ctx.dataIndex]}`;
+          }
+        }
+      }
+    },
+    scales: {
+      y: { beginAtZero: true, max: 700, grid: { color: '#F0F0F0' },
+           ticks: { stepSize: 100 } },
+      x: { grid: { display: false } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── 2. CATEGORIAS ─────────────────────────────────────────────────────────────
+new Chart(document.getElementById('chartCategoria'), {
+  type: 'bar',
+  data: {
+    labels: ['Janeiro', 'Fevereiro', 'Março'],
+    datasets: [
+      { label: 'Problema',               data: [165, 154, 246], backgroundColor: RED,    borderRadius: 3 },
+      { label: 'Solicitação de Serviço', data: [214, 272, 297], backgroundColor: BLUE_MID, borderRadius: 3 },
+      { label: 'Melhoria/Sugestão',      data: [34,  15,  22],  backgroundColor: YELLOW, borderRadius: 3 },
+      { label: 'Dúvida',                 data: [12,  18,  26],  backgroundColor: GREEN,  borderRadius: 3 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 10 } } }
+    },
+    scales: {
+      x: { stacked: true, grid: { display: false } },
+      y: { stacked: true, beginAtZero: true, grid: { color: '#F0F0F0' } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── 3. RANK SERVIÇOS ──────────────────────────────────────────────────────────
+const servicos = [
+  { label: 'Credenciamento / Descredenciamento', val: 238 },
+  { label: 'Endereço — Cadastro Novo',           val: 113 },
+  { label: 'Contrato (Locação ApolarNET)',        val: 95  },
+  { label: 'Opção (Vendas Apolar NET)',           val: 75  },
+  { label: 'Ajuste de Acesso — Locação',         val: 60  },
+  { label: 'Proposta (Vendas Apolar NET)',        val: 51  },
+  { label: 'CRM Sales » Problemas no CRM',       val: 50  },
+  { label: 'Ajuste de Acesso — Vendas',          val: 44  },
+  { label: 'Endereço — Ajuste',                  val: 38  },
+  { label: 'CRM Sales » Ajustes',                val: 36  },
+];
+const maxVal = servicos[0].val;
+const container = document.getElementById('rankServicos');
+servicos.forEach((s, i) => {
+  const pct = Math.round((s.val / maxVal) * 100);
+  container.innerHTML += `
+    <div class="rank-item">
+      <div class="rank-num">${i+1}</div>
+      <div class="rank-bar-wrap">
+        <div class="rank-label" title="${s.label}">${s.label}</div>
+        <div class="rank-bar-bg">
+          <div class="rank-bar-fill" style="width:${pct}%"></div>
+        </div>
+      </div>
+      <div class="rank-val">${s.val}</div>
+    </div>`;
+});
+
+// ── 4. TAGS GERAL ─────────────────────────────────────────────────────────────
+new Chart(document.getElementById('chartTags'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Acessos', 'Ajuste BD', 'Endereço', 'Orientação', 'Ajuste via Sistema',
+             'Erro do Sistema (BUG)', 'Treinamento', 'Outros'],
+    datasets: [{
+      data: [432, 223, 177, 155, 94, 69, 31, 50],
+      backgroundColor: [BLUE_MID, '#5BA4E5', '#8BC4F0', ORANGE, '#8A9BAE',
+                        RED, GREEN, GRAY],
+      borderWidth: 2,
+      borderColor: '#fff',
+      hoverOffset: 6,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '60%',
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: { boxWidth: 10, padding: 8, font: { size: 9 } }
+      }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── 5. BUGS por mês ───────────────────────────────────────────────────────────
+new Chart(document.getElementById('chartBugs'), {
+  type: 'line',
+  data: {
+    labels: ['Jan', 'Fev', 'Mar'],
+    datasets: [{
+      label: 'Bugs confirmados',
+      data: [21, 15, 33],
+      borderColor: RED,
+      backgroundColor: 'rgba(192,0,0,0.08)',
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: RED,
+      pointRadius: 5,
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#F0F0F0' } },
+      x: { grid: { display: false } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── 6. ORIENTAÇÃO por mês ─────────────────────────────────────────────────────
+new Chart(document.getElementById('chartOrientacao'), {
+  type: 'line',
+  data: {
+    labels: ['Jan', 'Fev', 'Mar'],
+    datasets: [{
+      label: 'Orientação',
+      data: [33, 53, 69],
+      borderColor: BLUE_MID,
+      backgroundColor: 'rgba(46,117,182,0.08)',
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: BLUE_MID,
+      pointRadius: 5,
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#F0F0F0' } },
+      x: { grid: { display: false } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── 7. TREINAMENTO por mês ────────────────────────────────────────────────────
+new Chart(document.getElementById('chartTreinamento'), {
+  type: 'line',
+  data: {
+    labels: ['Jan', 'Fev', 'Mar'],
+    datasets: [{
+      label: 'Treinamento',
+      data: [7, 10, 14],
+      borderColor: GREEN,
+      backgroundColor: 'rgba(55,86,35,0.08)',
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: GREEN,
+      pointRadius: 5,
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#F0F0F0' } },
+      x: { grid: { display: false } }
+    },
+    animation: { duration: 800 }
+  }
+});
+</script>
+</body>
+</html>
