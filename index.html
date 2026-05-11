@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard Suporte — Jan–Mai 2026 | Apolar Imóveis</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue-dark:  #1F3864;
+    --blue-mid:   #2E75B6;
+    --blue-light: #D6E4F0;
+    --orange:     #C55A11;
+    --orange-lt:  #FCE4D6;
+    --red:        #C00000;
+    --red-lt:     #FCE4E4;
+    --green:      #375623;
+    --green-lt:   #E2EFDA;
+    --yellow:     #F0A500;
+    --yellow-lt:  #FFF3CD;
+    --gray-bg:    #F4F6FA;
+    --gray-card:  #FFFFFF;
+    --gray-border:#E2E8F0;
+    --text-dark:  #1A202C;
+    --text-mid:   #4A5568;
+    --text-light: #718096;
+  }
+
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: var(--gray-bg);
+    color: var(--text-dark);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
+    padding: 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(31,56,100,0.3);
+  }
+  .header-left h1 {
+    font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.3px;
+  }
+  .header-left p {
+    font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.7); margin-top: 2px;
+  }
+  .header-right {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .badge {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 11px; font-weight: 600;
+    padding: 4px 12px; border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+
+  /* ── LAYOUT ── */
+  .main { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--text-light);
+    margin: 28px 0 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-label::after {
+    content: ''; flex: 1; height: 1px; background: var(--gray-border);
+  }
+
+  /* ── KPI STRIP ── */
+  .kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .kpi {
+    background: var(--gray-card);
+    border-radius: 12px;
+    padding: 16px 18px;
+    border: 1px solid var(--gray-border);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: var(--kpi-color, var(--blue-mid));
+  }
+  .kpi-label {
+    font-size: 10px; font-weight: 600; color: var(--text-light);
+    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;
+  }
+  .kpi-value {
+    font-size: 28px; font-weight: 800; color: var(--kpi-color, var(--blue-dark));
+    line-height: 1;
+  }
+  .kpi-sub {
+    font-size: 10px; font-weight: 500; color: var(--text-light); margin-top: 4px;
+  }
+  .kpi-delta {
+    font-size: 11px; font-weight: 700;
+    padding: 2px 7px; border-radius: 10px; display: inline-block; margin-top: 4px;
+  }
+  .kpi-delta.up   { background: var(--red-lt);   color: var(--red);   }
+  .kpi-delta.down { background: var(--green-lt);  color: var(--green); }
+  .kpi-delta.info { background: var(--blue-light); color: var(--blue-mid); }
+
+  /* ── GRID ── */
+  .grid-2    { display: grid; grid-template-columns: 1fr 1fr;       gap: 16px; }
+  .grid-3    { display: grid; grid-template-columns: 1fr 1fr 1fr;   gap: 16px; }
+  .grid-2-1  { display: grid; grid-template-columns: 2fr 1fr;       gap: 16px; }
+  .grid-1-2  { display: grid; grid-template-columns: 1fr 2fr;       gap: 16px; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--gray-card);
+    border-radius: 12px;
+    border: 1px solid var(--gray-border);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 14px 20px 10px;
+    border-bottom: 1px solid var(--gray-border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .card-title {
+    font-size: 12px; font-weight: 700; color: var(--blue-dark); letter-spacing: 0.2px;
+  }
+  .card-tag {
+    font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 8px;
+    background: var(--blue-light); color: var(--blue-mid);
+  }
+  .card-body { padding: 16px 20px; }
+  .card-body.no-pad { padding: 0; }
+
+  /* ── CHART CONTAINERS ── */
+  .chart-wrap { position: relative; }
+  .chart-wrap.h200 { height: 200px; }
+  .chart-wrap.h220 { height: 220px; }
+  .chart-wrap.h250 { height: 250px; }
+  .chart-wrap.h280 { height: 280px; }
+
+  /* ── RANK LIST ── */
+  .rank-list { display: flex; flex-direction: column; gap: 6px; }
+  .rank-item {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .rank-num {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--blue-dark); color: #fff;
+    font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .rank-bar-wrap { flex: 1; }
+  .rank-label {
+    font-size: 10px; font-weight: 600; color: var(--text-dark); margin-bottom: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px;
+  }
+  .rank-bar-bg {
+    height: 5px; background: var(--gray-bg); border-radius: 3px; overflow: hidden;
+  }
+  .rank-bar-fill {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--blue-mid), #5BA4E5);
+  }
+  .rank-val {
+    font-size: 11px; font-weight: 700; color: var(--blue-dark);
+    min-width: 30px; text-align: right;
+  }
+
+  /* ── TAG PILLS ── */
+  .tag-section { margin-bottom: 14px; }
+  .tag-section-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .pills-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill {
+    font-size: 10px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px;
+    display: flex; align-items: center; gap: 5px;
+    cursor: default;
+  }
+  .pill .pill-count {
+    background: rgba(0,0,0,0.12); border-radius: 10px;
+    padding: 1px 5px; font-size: 9px;
+  }
+
+  /* ── ALERT CARDS ── */
+  .alerts-grid { display: flex; flex-direction: column; gap: 8px; }
+  .alert-card {
+    border-radius: 8px; padding: 12px 14px;
+    display: flex; gap: 12px; align-items: flex-start;
+    border-left: 3px solid;
+  }
+  .alert-card.red    { background: var(--red-lt);    border-color: var(--red);    }
+  .alert-card.orange { background: var(--orange-lt); border-color: var(--orange); }
+  .alert-card.yellow { background: var(--yellow-lt); border-color: var(--yellow); }
+  .alert-card.blue   { background: var(--blue-light); border-color: var(--blue-mid); }
+  .alert-icon { font-size: 16px; line-height: 1; flex-shrink: 0; margin-top: 1px; }
+  .alert-title {
+    font-size: 11px; font-weight: 700; margin-bottom: 3px;
+  }
+  .alert-card.red    .alert-title { color: var(--red);    }
+  .alert-card.orange .alert-title { color: var(--orange); }
+  .alert-card.yellow .alert-title { color: #855900;       }
+  .alert-card.blue   .alert-title { color: var(--blue-mid); }
+  .alert-desc { font-size: 10px; font-weight: 500; color: var(--text-mid); line-height: 1.5; }
+
+  /* ── ACTION TABLE ── */
+  .action-table { width: 100%; border-collapse: collapse; }
+  .action-table th {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--text-light);
+    padding: 8px 12px; background: var(--gray-bg);
+    border-bottom: 1px solid var(--gray-border);
+    text-align: left;
+  }
+  .action-table td {
+    font-size: 11px; font-weight: 500; color: var(--text-dark);
+    padding: 10px 12px; border-bottom: 1px solid var(--gray-border);
+    vertical-align: top;
+  }
+  .action-table tr:last-child td { border-bottom: none; }
+  .action-table tr:nth-child(even) td { background: var(--gray-bg); }
+  .priority {
+    font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 10px;
+    white-space: nowrap;
+  }
+  .priority.alta    { background: var(--red-lt);    color: var(--red);    }
+  .priority.media   { background: var(--orange-lt); color: var(--orange); }
+  .priority.processo{ background: var(--blue-light); color: var(--blue-mid); }
+  .priority.cap     { background: var(--green-lt);  color: var(--green);  }
+  .impact-bar {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .impact-fill {
+    height: 6px; border-radius: 3px; background: var(--blue-mid);
+  }
+  .impact-pct { font-size: 10px; font-weight: 700; color: var(--blue-mid); }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center; padding: 20px;
+    font-size: 10px; font-weight: 500; color: var(--text-light);
+    border-top: 1px solid var(--gray-border); margin-top: 8px;
+  }
+
+  /* ── TABS ── */
+  .tab-bar {
+    display: flex; gap: 4px; padding: 0 32px;
+    background: var(--blue-dark); border-bottom: 3px solid var(--blue-mid);
+  }
+  .tab-btn {
+    padding: 11px 22px; cursor: pointer; border: none; background: transparent;
+    font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 600;
+    color: rgba(255,255,255,0.55); border-bottom: 3px solid transparent;
+    margin-bottom: -3px; transition: color .2s, border-color .2s; letter-spacing: .4px;
+  }
+  .tab-btn:hover { color: rgba(255,255,255,0.85); }
+  .tab-btn.active { color: #fff; border-bottom-color: #fff; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── AUDIT SECTION ── */
+  .audit-kpi-strip { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+  .audit-kpi {
+    flex: 1; min-width: 140px; background: #fff;
+    border-radius: 10px; padding: 16px 18px;
+    border-left: 4px solid var(--blue-mid);
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .audit-kpi.green  { border-left-color: var(--green); }
+  .audit-kpi.red    { border-left-color: var(--red); }
+  .audit-kpi.orange { border-left-color: var(--orange); }
+  .audit-kpi.yellow { border-left-color: var(--yellow); }
+  .audit-kpi-label { font-size: 10px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; }
+  .audit-kpi-value { font-size: 26px; font-weight: 800; color: var(--blue-dark); line-height: 1.1; }
+  .audit-kpi-sub   { font-size: 10px; color: var(--text-mid); margin-top: 3px; }
+
+  .version-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .version-table th {
+    background: var(--blue-dark); color: #fff; padding: 8px 10px;
+    text-align: left; font-weight: 600; font-size: 10px; letter-spacing: .5px;
+  }
+  .version-table th:last-child { text-align: left; }
+  .version-table td { padding: 8px 10px; border-bottom: 1px solid var(--gray-border); color: var(--text-mid); vertical-align: top; }
+  .version-table tr:last-child td { border-bottom: none; }
+  .version-table tr:hover td { background: var(--blue-light); }
+  .pct-bar-wrap { width: 90px; display: inline-block; vertical-align: middle; margin-left: 6px; }
+  .pct-bar-bg { height: 6px; background: var(--gray-border); border-radius: 3px; }
+  .pct-bar-fill { height: 6px; border-radius: 3px; }
+  .badge-status {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 9px; font-weight: 700; letter-spacing: .4px;
+  }
+  .badge-status.ok      { background: #E6F4EA; color: #1E7E34; }
+  .badge-status.prog    { background: #FFF3CD; color: #856404; }
+  .badge-status.plan    { background: #E2E8F0; color: #4A5568; }
+  .cat-pill {
+    display: inline-block; padding: 2px 7px; border-radius: 8px;
+    font-size: 9px; font-weight: 700; margin-right: 3px;
+  }
+  .cat-pill.mel { background: #D6E4F0; color: #1F3864; }
+  .cat-pill.bug { background: #FCE4E4; color: #C00000; }
+  .cat-pill.prj { background: #E6F4EA; color: #1E7E34; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <h1>Dashboard de Suporte — Apolar Imóveis</h1>
+    <p>Análise de Tickets · Jan–Mai 2026 · Base: 2.199 tickets · Atualizado em 11/05/2026</p>
+  </div>
+  <div class="header-right">
+    <span class="badge">Jan–Mai 2026</span>
+    <span class="badge">Movidesk</span>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('suporte')">📊 Suporte</button>
+  <button class="tab-btn" onclick="switchTab('auditoria')">✅ Auditorias de Versão</button>
+</div>
+
+<!-- TAB: SUPORTE -->
+<div id="tab-suporte" class="tab-panel active">
+<div class="main">
+
+  <!-- KPIs -->
+  <div class="section-label">Indicadores Gerais</div>
+  <div class="kpi-strip">
+    <div class="kpi" style="--kpi-color:#2E75B6">
+      <div class="kpi-label">Total de Tickets</div>
+      <div class="kpi-value">2.199</div>
+      <div class="kpi-sub">Jan–Mai 2026</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#C55A11">
+      <div class="kpi-label">Tickets Maio</div>
+      <div class="kpi-value">134</div>
+      <div class="kpi-sub">*Maio parcial (10 dias)</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#C00000">
+      <div class="kpi-label">Bugs Confirmados</div>
+      <div class="kpi-value">306</div>
+      <div class="kpi-sub">13.9% do total — Jan:63 / Fev:51 / Mar:110 / Abr:59 / Mai:23</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#375623">
+      <div class="kpi-label">Tickets de Orientação</div>
+      <div class="kpi-value">203</div>
+      <div class="kpi-sub">+515% vs jan — Jan:33 / Fev:53 / Mar:75 / Abr:39 / Mai:3</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#1F3864">
+      <div class="kpi-label">Credenciamentos</div>
+      <div class="kpi-value">375</div>
+      <div class="kpi-sub">17.1% do total — Jan:76 / Fev:98 / Mar:91 / Abr:85 / Mai:25</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#F0A500">
+      <div class="kpi-label">Redução c/ Endereços</div>
+      <div class="kpi-value">11,7%</div>
+      <div class="kpi-sub">257 tickets elimináveis</div>
+    </div>
+  </div>
+
+  <!-- EVOLUÇÃO MENSAL -->
+  <div class="section-label">Evolução Mensal</div>
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Volume Total de Tickets por Mês</span>
+        <span class="card-tag">Jan–Mai</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h250">
+          <canvas id="chartMensal"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Tickets por Categoria e Mês</span>
+        <span class="card-tag">Empilhado</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h250">
+          <canvas id="chartCategoria"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SERVIÇOS E TAGS -->
+  <div class="section-label">Serviços e Tags</div>
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Top 10 Serviços — Total Jan–Mai 2026</span>
+        <span class="card-tag">Ranking</span>
+      </div>
+      <div class="card-body">
+        <div class="rank-list" id="rankServicos"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Principais Tags</span>
+        <span class="card-tag">Distribuição</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200">
+          <canvas id="chartTags"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- AJUSTE BD -->
+  <div class="section-label">Análise: Tag Ajuste BD — 322 tickets (14,6% do total)</div>
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Top Serviços com Ajuste BD</span>
+        <span class="card-tag">Intervenção direta no banco</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h250">
+          <canvas id="chartAjusteBDServicos"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Evolução Mensal — Ajuste BD</span>
+        <span class="card-tag">Jan–Mai</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:14px">
+          <canvas id="chartAjusteBDMensal"></canvas>
+        </div>
+        <div style="background:var(--yellow-lt);border-left:3px solid var(--yellow);border-radius:6px;padding:10px 12px;margin-top:4px">
+          <div style="font-size:10px;font-weight:700;color:#855900;margin-bottom:3px">⚠️ Atenção</div>
+          <div style="font-size:10px;color:var(--text-mid);line-height:1.5">
+            Ajuste BD significa que o suporte precisou corrigir dados <strong>diretamente no banco de dados</strong> — sem solução pela interface do sistema. Volume estável e alto nos 3 meses indica problemas estruturais recorrentes no ApolarNET de Locação, especialmente no módulo de Contrato (67 tickets).
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          <div style="font-size:10px;font-weight:700;color:var(--text-mid);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Principais assuntos</div>
+          <div class="pills-wrap">
+            <div class="pill" style="background:var(--yellow-lt);color:#855900">Integração Cheques Everest <span class="pill-count">5</span></div>
+            <div class="pill" style="background:var(--yellow-lt);color:#855900">Reprocessar COBST <span class="pill-count">3</span></div>
+            <div class="pill" style="background:var(--yellow-lt);color:#855900">Extrato mensal c/ erro <span class="pill-count">2</span></div>
+            <div class="pill" style="background:var(--yellow-lt);color:#855900">Cadastro de Profissão/Ramo <span class="pill-count">4</span></div>
+            <div class="pill" style="background:var(--yellow-lt);color:#855900">Boleto não incluído <span class="pill-count">2</span></div>
+            <div class="pill" style="background:var(--yellow-lt);color:#855900">Foto Corrompida <span class="pill-count">4</span></div>
+            <div class="pill" style="background:var(--yellow-lt);color:#855900">Conta bancária <span class="pill-count">2</span></div>
+            <div class="pill" style="background:var(--yellow-lt);color:#855900">Imóvel/Franquia errada <span class="pill-count">2</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAGS QUALITATIVAS -->
+  <div class="section-label">Tags Qualitativas — Bugs, Orientação & Treinamento</div>
+  <div class="grid-3">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--red)">🐛 Erros de Sistema (Bug)</span>
+        <span class="card-tag" style="background:var(--red-lt);color:var(--red)">306 confirmados</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:12px">
+          <canvas id="chartBugs"></canvas>
+        </div>
+        <div class="pills-wrap">
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">CRM Problemas <span class="pill-count">84</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Proposta <span class="pill-count">20</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Distrib. Leads <span class="pill-count">24</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Contrato Locação <span class="pill-count">25</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Opção Vendas <span class="pill-count">16</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Ajuste Acesso <span class="pill-count">32</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--blue-mid)">📘 Orientação</span>
+        <span class="card-tag">203 tickets · crescendo</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:12px">
+          <canvas id="chartOrientacao"></canvas>
+        </div>
+        <div class="pills-wrap">
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Opção de Venda <span class="pill-count">39</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Proposta <span class="pill-count">20</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Problemas CRM <span class="pill-count">32</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Contrato <span class="pill-count">7</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Foto Corrompida <span class="pill-count">6</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Credenciamento <span class="pill-count">13</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--green)">🎓 Necessita Treinamento</span>
+        <span class="card-tag" style="background:var(--green-lt);color:var(--green)">42 tickets</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:12px">
+          <canvas id="chartTreinamento"></canvas>
+        </div>
+        <div class="pills-wrap">
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">Opção de Venda <span class="pill-count">39</span></div>
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">CRM Sales <span class="pill-count">5</span></div>
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">Clique Apolar <span class="pill-count">3</span></div>
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">Novo Colaborador <span class="pill-count">3</span></div>
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">Proposta <span class="pill-count">20</span></div>
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">Reserva <span class="pill-count">1</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- AJUSTE BD — ABRIL (recorte mensal) -->
+  <div class="section-label">Ajuste BD — Maio 2026 <span style="font-size:10px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--text-light)">&nbsp;· recorte do último mês · 12 tickets</span></div>
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Top Serviços com Ajuste BD — Maio</span>
+        <span class="card-tag" style="background:var(--yellow-lt);color:#855900">Maio 2026</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h250">
+          <canvas id="chartAjusteBDServicosAbr"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Tags Qualitativas — Bugs, Orientação & Treinamento em Maio</span>
+        <span class="card-tag" style="background:var(--yellow-lt);color:#855900">Maio 2026</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h250">
+          <canvas id="chartTagsAbr"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAGS QUALITATIVAS — ABRIL (recorte mensal) -->
+  <div class="section-label">Principais Serviços por Tag — Maio 2026 <span style="font-size:10px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--text-light)">&nbsp;· recorte do último mês</span></div>
+  <div class="grid-3">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--red)">🐛 Bug — Maio</span>
+        <span class="card-tag" style="background:var(--red-lt);color:var(--red)">23 confirmados</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:12px">
+          <canvas id="chartBugsAbr"></canvas>
+        </div>
+        <div class="pills-wrap">
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Ajuste de Acesso <span class="pill-count">4</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Recibo de Aluguel <span class="pill-count">3</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Informações incorretas <span class="pill-count">2</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Contrato <span class="pill-count">2</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Relatório <span class="pill-count">2</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--blue-mid)">📘 Orientação — Maio</span>
+        <span class="card-tag">3 tickets</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:12px">
+          <canvas id="chartOrientacaoAbr"></canvas>
+        </div>
+        <div class="pills-wrap">
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Ajuste de Acesso <span class="pill-count">1</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Descredenciamento <span class="pill-count">1</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Contrato <span class="pill-count">1</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--green)">🎓 Treinamento — Maio</span>
+        <span class="card-tag" style="background:var(--green-lt);color:var(--green)">0 tickets</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:12px">
+          <canvas id="chartTreinamentoAbr"></canvas>
+        </div>
+        <div class="pills-wrap">
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">Nenhum registro em Maio</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ALERTAS -->
+  <div class="section-label">Alertas</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">⚠️ Alertas Ativos</span>
+      </div>
+      <div class="card-body">
+        <div class="alerts-grid">
+          <div class="alert-card red">
+            <div class="alert-icon">🔴</div>
+            <div>
+              <div class="alert-title">CRM Apolar Sales — Degradação Sistêmica</div>
+              <div class="alert-desc">84 bugs confirmados Jan–Mai (Jan:15 / Fev:15 / Mar:38 / Abr:14 / Mai:2). Leads retidos, distribuição incorreta e integração com portais comprometida. Múltiplas franquias afetadas simultaneamente.</div>
+            </div>
+          </div>
+          <div class="alert-card orange">
+            <div class="alert-icon">🟠</div>
+            <div>
+              <div class="alert-title">Módulo de Contrato — 25 Bugs Confirmados</div>
+              <div class="alert-desc">Jan:6 / Fev:4 / Mar:9 / Abr:4 / Mai:2. Falha na liberação de ganchos, boleto não gerado, transferência de saldo com erro, percentual FCI incorreto. Além disso, 97 tickets com Ajuste BD indicam problemas estruturais recorrentes.</div>
+            </div>
+          </div>
+          <div class="alert-card orange">
+            <div class="alert-icon">🟠</div>
+            <div>
+              <div class="alert-title">Portal Apolar — Instabilidade Recorrente</div>
+              <div class="alert-desc">+350% em tickets de site fora do ar em março. Área restrita inacessível, imóveis não publicados pós-atualização. Padrão de deploy sem comunicação prévia à rede.</div>
+            </div>
+          </div>
+          <div class="alert-card blue">
+            <div class="alert-icon">🔵</div>
+            <div>
+              <div class="alert-title">Tag "Orientação" em crescimento contínuo</div>
+              <div class="alert-desc">De 33 (jan) para 3 (Mai), -91% em 5 meses — Jan:33 / Fev:53 / Mar:75 / Abr:36. Indica demanda crescente por capacitação e documentação. Concentrado em Opção de Venda, Contrato e Carga de Anúncios.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AÇÕES -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">✅ Plano de Ação</span>
+        <span class="card-tag">3 ações priorizadas</span>
+      </div>
+      <div class="card-body no-pad">
+        <table class="action-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Ação</th>
+              <th>Prioridade</th>
+              <th>Impacto</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1</strong></td>
+              <td>
+                <strong>Integração base de endereços em tempo real</strong><br>
+                <span style="color:var(--text-light);font-size:10px">Elimina tickets de cadastro/ajuste de endereço — 257 tickets elimináveis</span>
+              </td>
+              <td><span class="priority alta">Alta</span></td>
+              <td>
+                <div class="impact-bar">
+                  <div class="impact-fill" style="width:125px"></div>
+                  <span class="impact-pct">−11,7%</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>2</strong></td>
+              <td>
+                <strong>Postmortem CRM Apolar Sales</strong><br>
+                <span style="color:var(--text-light);font-size:10px">Investigar regressão no motor de distribuição de leads — 84 bugs confirmados Jan–Mai</span>
+              </td>
+              <td><span class="priority alta">Alta</span></td>
+              <td>
+                <div class="impact-bar">
+                  <div class="impact-fill" style="width:100px"></div>
+                  <span class="impact-pct">−84 bugs</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>3</strong></td>
+              <td>
+                <strong>Capacitação: Opção de Venda + CRM Sales</strong><br>
+                <span style="color:var(--text-light);font-size:10px">Vídeos, FAQ e webinar mensal para a rede</span>
+              </td>
+              <td><span class="priority cap">Capacitação</span></td>
+              <td>
+                <div class="impact-bar">
+                  <div class="impact-fill" style="width:90px;background:var(--green)"></div>
+                  <span class="impact-pct" style="color:var(--green)">~−186 tk</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div><!-- /tab-suporte -->
+
+<!-- TAB: AUDITORIAS -->
+<div id="tab-auditoria" class="tab-panel">
+<div class="main">
+
+  <div class="section-label">Auditorias de Versão — Apolar NET</div>
+
+  <!-- KPIs de Auditoria -->
+  <div class="audit-kpi-strip">
+    <div class="audit-kpi green">
+      <div class="audit-kpi-label">Melhor aprovação</div>
+      <div class="audit-kpi-value">94,1%</div>
+      <div class="audit-kpi-sub">Versão 10.2 (Abr 2025)</div>
+    </div>
+    <div class="audit-kpi red">
+      <div class="audit-kpi-label">Menor aprovação</div>
+      <div class="audit-kpi-value">66,7%</div>
+      <div class="audit-kpi-sub">V10.5, A e C (empate)</div>
+    </div>
+    <div class="audit-kpi orange">
+      <div class="audit-kpi-label">Média geral</div>
+      <div class="audit-kpi-value">74,2%</div>
+      <div class="audit-kpi-sub">Versões 10.2 a C</div>
+    </div>
+    <div class="audit-kpi yellow">
+      <div class="audit-kpi-label">Versão em andamento</div>
+      <div class="audit-kpi-value">V10.6 / C</div>
+      <div class="audit-kpi-sub">Status: Em progresso</div>
+    </div>
+    <div class="audit-kpi" style="border-left-color:#1F3864">
+      <div class="audit-kpi-label">Total de itens auditados</div>
+      <div class="audit-kpi-value">560</div>
+      <div class="audit-kpi-sub">Versões 10.2 a C</div>
+    </div>
+  </div>
+
+  <!-- Gráficos -->
+  <div class="grid-2" style="margin-bottom:18px">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">% de Aprovação por Versão</span>
+        <span class="card-tag">Evolução</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h280">
+          <canvas id="chartAprovacao"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Composição por Categoria — Melhoria / Bug / Projeto</span>
+        <span class="card-tag">Empilhado</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h280">
+          <canvas id="chartCategoriaAudit"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tabela detalhada -->
+  <div class="card" style="margin-bottom:18px">
+    <div class="card-header">
+      <span class="card-title">Detalhe por Versão</span>
+      <span class="card-tag">Todas as versões</span>
+    </div>
+    <div class="card-body" style="padding:0">
+      <table class="version-table">
+        <thead>
+          <tr>
+            <th>Versão</th>
+            <th>Período</th>
+            <th>Status</th>
+            <th>Total</th>
+            <th>Aprovados</th>
+            <th>% Aprovação</th>
+            <th>Categorias</th>
+            <th>Principal motivo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>10.2</strong></td>
+            <td>Mensal (Abr 2025)</td>
+            <td><span class="badge-status ok">Concluído</span></td>
+            <td>85</td>
+            <td>80</td>
+            <td>
+              <strong style="color:var(--green)">94,1%</strong>
+              <div class="pct-bar-wrap"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:94%;background:var(--green)"></div></div></div>
+            </td>
+            <td><span class="cat-pill mel">Mel: 63</span><span class="cat-pill bug">Bug: 11</span><span class="cat-pill prj">Prj: 0</span></td>
+            <td>Análise</td>
+          </tr>
+          <tr>
+            <td><strong>10.3</strong></td>
+            <td>Trimestral (Mai–Jul 2025)</td>
+            <td><span class="badge-status ok">Concluído</span></td>
+            <td>194</td>
+            <td>158</td>
+            <td>
+              <strong style="color:#2E75B6">81,4%</strong>
+              <div class="pct-bar-wrap"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:81%;background:#2E75B6"></div></div></div>
+            </td>
+            <td><span class="cat-pill mel">Mel: 167</span><span class="cat-pill bug">Bug: 27</span><span class="cat-pill prj">Prj: 0</span></td>
+            <td>Falta de alinhamento</td>
+          </tr>
+          <tr>
+            <td><strong>10.4</strong></td>
+            <td>Trimestral (Ago–Out 2025)</td>
+            <td><span class="badge-status ok">Concluído</span></td>
+            <td>103</td>
+            <td>83</td>
+            <td>
+              <strong style="color:#2E75B6">80,6%</strong>
+              <div class="pct-bar-wrap"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:81%;background:#2E75B6"></div></div></div>
+            </td>
+            <td><span class="cat-pill mel">Mel: 92</span><span class="cat-pill bug">Bug: 10</span><span class="cat-pill prj">Prj: 1</span></td>
+            <td>Falta de alinhamento</td>
+          </tr>
+          <tr>
+            <td><strong>10.5</strong></td>
+            <td>Bimestral (Nov–Dez 2025)</td>
+            <td><span class="badge-status ok">Concluído</span></td>
+            <td>60</td>
+            <td>40</td>
+            <td>
+              <strong style="color:var(--orange)">66,7%</strong>
+              <div class="pct-bar-wrap"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:67%;background:var(--orange)"></div></div></div>
+            </td>
+            <td><span class="cat-pill mel">Mel: 49</span><span class="cat-pill bug">Bug: 14</span><span class="cat-pill prj">Prj: 1</span></td>
+            <td>Falta de teste</td>
+          </tr>
+          <tr>
+            <td><strong>10.6</strong></td>
+            <td>Trimestral (Jan–Mar 2026)</td>
+            <td><span class="badge-status prog">Em progresso</span></td>
+            <td>59</td>
+            <td>40</td>
+            <td>
+              <strong style="color:var(--orange)">67,8%</strong>
+              <div class="pct-bar-wrap"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:68%;background:var(--orange)"></div></div></div>
+            </td>
+            <td><span class="cat-pill mel">Mel: 22</span><span class="cat-pill bug">Bug: 33</span><span class="cat-pill prj">Prj: 4</span></td>
+            <td>Não atingiu objetivo</td>
+          </tr>
+          <tr>
+            <td><strong>A</strong></td>
+            <td>Sprint A</td>
+            <td><span class="badge-status ok">Concluído</span></td>
+            <td>15</td>
+            <td>10</td>
+            <td>
+              <strong style="color:var(--orange)">66,7%</strong>
+              <div class="pct-bar-wrap"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:67%;background:var(--orange)"></div></div></div>
+            </td>
+            <td><span class="cat-pill mel">Mel: 7</span><span class="cat-pill bug">Bug: 6</span><span class="cat-pill prj">Prj: 2</span></td>
+            <td>Em implementação</td>
+          </tr>
+          <tr>
+            <td><strong>B</strong></td>
+            <td>Sprint B</td>
+            <td><span class="badge-status ok">Concluído</span></td>
+            <td>20</td>
+            <td>14</td>
+            <td>
+              <strong style="color:var(--orange)">70,0%</strong>
+              <div class="pct-bar-wrap"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:70%;background:var(--orange)"></div></div></div>
+            </td>
+            <td><span class="cat-pill mel">Mel: 10</span><span class="cat-pill bug">Bug: 9</span><span class="cat-pill prj">Prj: 1</span></td>
+            <td>Não atingiu objetivo</td>
+          </tr>
+          <tr>
+            <td><strong>C</strong></td>
+            <td>Sprint C</td>
+            <td><span class="badge-status prog">Em progresso</span></td>
+            <td>24</td>
+            <td>16</td>
+            <td>
+              <strong style="color:var(--orange)">66,7%</strong>
+              <div class="pct-bar-wrap"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:67%;background:var(--orange)"></div></div></div>
+            </td>
+            <td><span class="cat-pill mel">Mel: 5</span><span class="cat-pill bug">Bug: 18</span><span class="cat-pill prj">Prj: 1</span></td>
+            <td>Não atingiu objetivo</td>
+          </tr>
+          <tr>
+            <td><strong>10.7</strong></td>
+            <td>Trimestral (Abr–Jun 2026)</td>
+            <td><span class="badge-status plan">Planejado</span></td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+</div><!-- /tab-auditoria -->
+
+<div class="footer">
+  Apolar Imóveis · Dashboard de Suporte Jan–Mai 2026 · Dados: Movidesk · Atualizado em 11/05/2026 · *Maio parcial (10 dias)</div>
+
+<script>
+const BLUE_DARK  = '#1F3864';
+const BLUE_MID   = '#2E75B6';
+const BLUE_LIGHT = '#D6E4F0';
+const ORANGE     = '#C55A11';
+const RED        = '#C00000';
+const GREEN      = '#375623';
+const YELLOW     = '#F0A500';
+const GRAY       = '#E2E8F0';
+
+const defaultFont = { family: 'Montserrat' };
+Chart.defaults.font.family = 'Montserrat';
+Chart.defaults.font.size   = 11;
+Chart.defaults.color       = '#4A5568';
+
+// ── 1. EVOLUÇÃO MENSAL ────────────────────────────────────────────────────────
+new Chart(document.getElementById('chartMensal'), {
+  type: 'bar',
+  data: {
+    labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio*'],
+    datasets: [{
+      label: 'Tickets',
+      data: [435, 468, 644, 518, 134],
+      backgroundColor: [BLUE_MID, BLUE_MID, ORANGE, '#A0B8D0'],
+      borderRadius: 6,
+      barThickness: 44,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          afterLabel: (ctx) => {
+            const deltas = ['—', '+7,6%', '+37,6%', 'parcial (10 dias)'];
+            return `Variação: ${deltas[ctx.dataIndex]}`;
+          }
+        }
+      }
+    },
+    scales: {
+      y: { beginAtZero: true, max: 800, grid: { color: '#F0F0F0' },
+           ticks: { stepSize: 100 } },
+      x: { grid: { display: false } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── 2. CATEGORIAS ─────────────────────────────────────────────────────────────
+new Chart(document.getElementById('chartCategoria'), {
+  type: 'bar',
+  data: {
+    labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio*'],
+    datasets: [
+      { label: 'Bug/Problema',            data: [165, 154, 268, 153, 38],  backgroundColor: RED,    borderRadius: 3 },
+      { label: 'Solicitação de Serviço',  data: [224, 281, 325, 327, 89],  backgroundColor: BLUE_MID, borderRadius: 3 },
+      { label: 'Melhoria/Sugestão',       data: [34, 15, 23, 29, 6],  backgroundColor: YELLOW, borderRadius: 3 },
+      { label: 'Dúvida',                  data: [12, 18, 28, 9, 1],  backgroundColor: GREEN,  borderRadius: 3 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 10 } } }
+    },
+    scales: {
+      x: { stacked: true, grid: { display: false } },
+      y: { stacked: true, beginAtZero: true, grid: { color: '#F0F0F0' } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── 3. RANK SERVIÇOS ──────────────────────────────────────────────────────────
+const servicos = [
+  { label: 'Credenciamento/Descredenciamento', val: 336 },
+  { label: 'Endereço — Cadastro Novo', val: 165 },
+  { label: 'Contrato (Locação ApolarNET)', val: 134 },
+  { label: 'Ajuste de Acesso — Locação', val: 95 },
+  { label: 'Opção (Vendas Apolar NET)', val: 88 },
+  { label: 'Ajuste de Acesso — Vendas', val: 69 },
+  { label: 'Proposta (Vendas Apolar NET)', val: 66 },
+  { label: 'CRM Sales » Problemas no CRM', val: 66 },
+  { label: 'Relatório (Locação)', val: 54 },
+  { label: 'Endereço — Ajuste', val: 49 },
+];
+const maxVal = servicos[0].val;
+const container = document.getElementById('rankServicos');
+servicos.forEach((s, i) => {
+  const pct = Math.round((s.val / maxVal) * 100);
+  container.innerHTML += `
+    <div class="rank-item">
+      <div class="rank-num">${i+1}</div>
+      <div class="rank-bar-wrap">
+        <div class="rank-label" title="${s.label}">${s.label}</div>
+        <div class="rank-bar-bg">
+          <div class="rank-bar-fill" style="width:${pct}%"></div>
+        </div>
+      </div>
+      <div class="rank-val">${s.val}</div>
+    </div>`;
+});
+
+// ── 4. TAGS GERAL ─────────────────────────────────────────────────────────────
+new Chart(document.getElementById('chartTags'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Acessos', 'Ajuste BD', 'Endereço', 'Orientação', 'Ajuste via Sistema',
+             'Erro do Sistema (BUG)', 'Treinamento', 'Outros'],
+    datasets: [{
+      data: [673, 322, 249, 203, 133, 142, 42, 435],
+      backgroundColor: [BLUE_MID, '#5BA4E5', '#8BC4F0', ORANGE, '#8A9BAE',
+                        RED, GREEN, GRAY],
+      borderWidth: 2,
+      borderColor: '#fff',
+      hoverOffset: 6,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '60%',
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: { boxWidth: 10, padding: 8, font: { size: 9 } }
+      }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── AJUSTE BD — TOP SERVIÇOS ──────────────────────────────────────────────────
+new Chart(document.getElementById('chartAjusteBDServicos'), {
+  type: 'bar',
+  data: {
+    labels: [
+      'Contrato (Locação)',
+      'Proposta (Vendas)',
+      'Recibo Aluguel (Sacara)',
+      'Recibo Aluguel (Locação)',
+      'Sacara » Everest',
+      'Opção (Vendas)',
+      'Extrato do Aluguel',
+      'Bem (Locação)',
+    ],
+    datasets: [{
+      label: 'Tickets Ajuste BD',
+      data: [67, 22, 20, 19, 18, 11, 10, 8],
+      backgroundColor: [
+        '#F0A500','#F5B833','#F5C85A','#F5D37A',
+        '#F5DC96','#F5E4B0','#F5EBC8','#FAF3E0'
+      ],
+      borderRadius: 5,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { beginAtZero: true, grid: { color: '#F0F0F0' } },
+      y: { grid: { display: false }, ticks: { font: { size: 9 } } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── AJUSTE BD — EVOLUÇÃO MENSAL ───────────────────────────────────────────────
+new Chart(document.getElementById('chartAjusteBDMensal'), {
+  type: 'bar',
+  data: {
+    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai*'],
+    datasets: [{
+      label: 'Ajuste BD',
+      data: [76, 77, 97, 60, 12],
+      backgroundColor: [YELLOW, YELLOW, '#E59400', '#F5D37A'],
+      borderRadius: 6,
+      barThickness: 40,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, max: 100, grid: { color: '#F0F0F0' } },
+      x: { grid: { display: false } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── 5. BUGS por mês ───────────────────────────────────────────────────────────
+new Chart(document.getElementById('chartBugs'), {
+  type: 'line',
+  data: {
+    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai*'],
+    datasets: [{
+      label: 'Bugs confirmados',
+      data: [63, 51, 110, 59, 23],
+      borderColor: RED,
+      backgroundColor: 'rgba(192,0,0,0.08)',
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: RED,
+      pointRadius: 5,
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#F0F0F0' } },
+      x: { grid: { display: false } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── 6. ORIENTAÇÃO por mês ─────────────────────────────────────────────────────
+new Chart(document.getElementById('chartOrientacao'), {
+  type: 'line',
+  data: {
+    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai*'],
+    datasets: [{
+      label: 'Orientação',
+      data: [33, 53, 75, 39, 3],
+      borderColor: BLUE_MID,
+      backgroundColor: 'rgba(46,117,182,0.08)',
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: BLUE_MID,
+      pointRadius: 5,
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#F0F0F0' } },
+      x: { grid: { display: false } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── 7. TREINAMENTO por mês ────────────────────────────────────────────────────
+new Chart(document.getElementById('chartTreinamento'), {
+  type: 'line',
+  data: {
+    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai*'],
+    datasets: [{
+      label: 'Treinamento',
+      data: [7, 10, 17, 8, 0],
+      borderColor: GREEN,
+      backgroundColor: 'rgba(55,86,35,0.08)',
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: GREEN,
+      pointRadius: 5,
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#F0F0F0' } },
+      x: { grid: { display: false } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── AJUSTE BD ABRIL — top serviços ───────────────────────────────────────────
+new Chart(document.getElementById('chartAjusteBDServicosAbr'), {
+  type: 'bar',
+  data: {
+    labels: ['Everest', 'Contrato', 'Recibo de Aluguel', 'Apolar NET',
+             'Site Fora do Ar', 'Ajuste de Acesso', 'Relatório'],
+    datasets: [{
+      label: 'Ajuste BD — Maio',
+      data: [5, 2, 1, 1, 1, 1, 1],
+      backgroundColor: ['#F0A500','#F5B833','#F5C85A','#F5D37A',
+                        '#F5DC96','#F5E4B0','#F5EBC8','#FAF3E0'],
+      borderRadius: 5,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { beginAtZero: true, grid: { color: '#F0F0F0' } },
+      y: { grid: { display: false }, ticks: { font: { size: 9 } } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── TAGS QUALITATIVAS ABRIL — doughnut comparativo ───────────────────────────
+new Chart(document.getElementById('chartTagsAbr'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Bug (23)', 'Orientação (3)', 'Treinamento (0)'],
+    datasets: [{
+      data: [23, 3, 0],
+      backgroundColor: [RED, BLUE_MID, GREEN],
+      borderWidth: 2,
+      borderColor: '#fff',
+      hoverOffset: 6,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '58%',
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 10 } } },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed} tickets` } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── BUG ABRIL — top serviços ─────────────────────────────────────────────────
+new Chart(document.getElementById('chartBugsAbr'), {
+  type: 'bar',
+  data: {
+    labels: ['Ajuste de Acesso', 'Recibo de Aluguel', 'Informações incorretas',
+             'Contrato', 'Relatório'],
+    datasets: [{
+      label: 'Bugs — Maio',
+      data: [4, 3, 2, 2, 2],
+      backgroundColor: 'rgba(192,0,0,0.75)',
+      borderRadius: 5,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { stepSize: 2 } },
+      y: { grid: { display: false }, ticks: { font: { size: 9 } } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── ORIENTAÇÃO ABRIL — top serviços ──────────────────────────────────────────
+new Chart(document.getElementById('chartOrientacaoAbr'), {
+  type: 'bar',
+  data: {
+    labels: ['Ajuste de Acesso', 'Descredenciamento', 'Contrato'],
+    datasets: [{
+      label: 'Orientação — Maio',
+      data: [1, 1, 1],
+      backgroundColor: 'rgba(46,117,182,0.75)',
+      borderRadius: 5,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { stepSize: 2 } },
+      y: { grid: { display: false }, ticks: { font: { size: 9 } } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── TREINAMENTO ABRIL — top serviços ─────────────────────────────────────────
+new Chart(document.getElementById('chartTreinamentoAbr'), {
+  type: 'bar',
+  data: {
+    labels: ['Sem registros em Maio'],
+    datasets: [{
+      label: 'Treinamento — Maio',
+      data: [0],
+      backgroundColor: 'rgba(55,86,35,0.75)',
+      borderRadius: 5,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { stepSize: 1 } },
+      y: { grid: { display: false }, ticks: { font: { size: 9 } } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── TAB SWITCHING ─────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'auditoria' && !window._auditChartsBuilt) {
+    window._auditChartsBuilt = true;
+    setTimeout(buildAuditCharts, 50);
+  }
+}
+
+// ── AUDIT CHARTS (lazy — só renderiza ao abrir a aba) ────────────────────────
+function buildAuditCharts() {
+  // Força o painel a ter dimensões antes de criar os charts
+  const panel = document.getElementById('tab-auditoria');
+  panel.style.display = 'block';
+  // Rótulos: A, B, C com seta indicando que são sub-versões da 10.6
+  const versoes   = ['10.2', '10.3', '10.4', '10.5', '10.6', '10.6 › A', '10.6 › B', '10.6 › C'];
+  const aprovacao = [94.12, 81.44, 80.58, 66.67, 67.80, 66.67, 70.00, 66.67];
+  const melhoria  = [63, 167, 92, 49, 22, 7, 10, 5];
+  const bugs      = [11, 27, 10, 14, 33, 6, 9, 18];
+  const projeto   = [0, 0, 1, 1, 4, 2, 1, 1];
+
+  // Cores de aprovação: verde ≥80%, laranja 70-80%, vermelho <70%
+  const apvColors = aprovacao.map(v =>
+    v >= 80 ? '#375623' : v >= 70 ? '#C55A11' : '#C00000'
+  );
+  // Borda destacada para o grupo 10.6 (índices 4–7)
+  const apvBorder = versoes.map((_, i) => i >= 4 ? '#1F3864' : 'transparent');
+  const apvBorderW = versoes.map((_, i) => i >= 4 ? 2 : 0);
+
+  // Plugin: fundo cinza claro por trás do grupo 10.6
+  const groupBgPlugin = {
+    id: 'groupBg',
+    beforeDraw(chart) {
+      const {ctx, chartArea, scales} = chart;
+      const xScale = scales.x;
+      const x0 = xScale.getPixelForValue(3.5);
+      const x1 = xScale.getPixelForValue(7.5);
+      ctx.save();
+      ctx.fillStyle = 'rgba(31,56,100,0.06)';
+      ctx.fillRect(x0, chartArea.top - 8, x1 - x0, chartArea.bottom - chartArea.top + 8);
+      ctx.restore();
+    },
+    afterDraw(chart) {
+      const {ctx, chartArea, scales} = chart;
+      const xScale = scales.x;
+      const x0 = xScale.getPixelForValue(3.5);
+      const x1 = xScale.getPixelForValue(7.5);
+      const xMid = (x0 + x1) / 2;
+      ctx.save();
+      ctx.font = '700 9px Montserrat, sans-serif';
+      ctx.fillStyle = '#1F3864';
+      ctx.textAlign = 'center';
+      ctx.fillText('◂ Grupo Versão 10.6 ▸', xMid, chartArea.top - 2);
+      ctx.restore();
+    }
+  };
+
+  // Gráfico 1 — % aprovação
+  const chart1 = new Chart(document.getElementById('chartAprovacao'), {
+    type: 'bar',
+    data: {
+      labels: versoes,
+      datasets: [{
+        label: '% de aprovação',
+        data: aprovacao,
+        backgroundColor: apvColors,
+        borderColor: apvBorder,
+        borderWidth: apvBorderW,
+        borderRadius: 6,
+        barThickness: 34,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: ctx => `${ctx.parsed.y.toFixed(1)}% aprovados` }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true, max: 100,
+          grid: { color: '#F0F0F0' },
+          ticks: { callback: v => v + '%' }
+        },
+        x: { grid: { display: false }, ticks: { font: { size: 9 } } }
+      },
+      layout: { padding: { top: 16 } },
+      animation: { duration: 800 }
+    },
+    plugins: [groupBgPlugin]
+  });
+
+  // Gráfico 2 — composição por categoria (empilhado)
+  const chart2 = new Chart(document.getElementById('chartCategoriaAudit'), {
+    type: 'bar',
+    data: {
+      labels: versoes,
+      datasets: [
+        { label: 'Melhoria', data: melhoria, backgroundColor: '#2E75B6', borderRadius: 3 },
+        { label: 'Bug',      data: bugs,     backgroundColor: '#C00000', borderRadius: 3 },
+        { label: 'Projeto',  data: projeto,  backgroundColor: '#375623', borderRadius: 3 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 10 } } }
+      },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { size: 9 } } },
+        y: { stacked: true, beginAtZero: true, grid: { color: '#F0F0F0' } }
+      },
+      layout: { padding: { top: 16 } },
+      animation: { duration: 800 }
+    },
+    plugins: [groupBgPlugin]
+  });
+
+  // Força resize para garantir renderização correta após display:none → block
+  setTimeout(() => { chart1.resize(); chart2.resize(); }, 100);
+}
+</script>
+</body>
+</html>
