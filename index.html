@@ -1,0 +1,2064 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard Suporte — Jan–Ago 2026 | Apolar Imóveis</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue-dark:  #1F3864;
+    --blue-mid:   #2E75B6;
+    --blue-light: #D6E4F0;
+    --orange:     #C55A11;
+    --orange-lt:  #FCE4D6;
+    --red:        #C00000;
+    --red-lt:     #FCE4E4;
+    --green:      #375623;
+    --green-lt:   #E2EFDA;
+    --yellow:     #F0A500;
+    --yellow-lt:  #FFF3CD;
+    --gray-bg:    #F4F6FA;
+    --gray-card:  #FFFFFF;
+    --gray-border:#E2E8F0;
+    --text-dark:  #1A202C;
+    --text-mid:   #4A5568;
+    --text-light: #718096;
+  }
+
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: var(--gray-bg);
+    color: var(--text-dark);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
+    padding: 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(31,56,100,0.3);
+  }
+  .header-left h1 {
+    font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.3px;
+  }
+  .header-left p {
+    font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.7); margin-top: 2px;
+  }
+  .header-right {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .badge {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 11px; font-weight: 600;
+    padding: 4px 12px; border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+
+  /* ── LAYOUT ── */
+  .main { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--text-light);
+    margin: 28px 0 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-label::after {
+    content: ''; flex: 1; height: 1px; background: var(--gray-border);
+  }
+
+  /* ── KPI STRIP ── */
+  .kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .kpi {
+    background: var(--gray-card);
+    border-radius: 12px;
+    padding: 16px 18px;
+    border: 1px solid var(--gray-border);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: var(--kpi-color, var(--blue-mid));
+  }
+  .kpi-label {
+    font-size: 10px; font-weight: 600; color: var(--text-light);
+    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;
+  }
+  .info-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 13px; height: 13px; border-radius: 50%;
+    background: var(--gray-border); color: var(--text-mid);
+    font-size: 9px; font-weight: 700; font-style: normal;
+    cursor: help; margin-left: 4px; vertical-align: middle;
+  }
+  .kpi-value {
+    font-size: 28px; font-weight: 800; color: var(--kpi-color, var(--blue-dark));
+    line-height: 1;
+  }
+  .kpi-sub {
+    font-size: 10px; font-weight: 500; color: var(--text-light); margin-top: 4px;
+  }
+  .kpi-delta {
+    font-size: 11px; font-weight: 700;
+    padding: 2px 7px; border-radius: 10px; display: inline-block; margin-top: 4px;
+  }
+  .kpi-delta.up   { background: var(--red-lt);   color: var(--red);   }
+  .kpi-delta.down { background: var(--green-lt);  color: var(--green); }
+  .kpi-delta.info { background: var(--blue-light); color: var(--blue-mid); }
+
+  /* ── GRID ── */
+  .grid-1    { display: grid; grid-template-columns: 1fr;           gap: 16px; }
+  .grid-4    { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; }
+  .grid-2    { display: grid; grid-template-columns: 1fr 1fr;       gap: 16px; }
+  .grid-2-mini { display: grid; grid-template-columns: 1fr 1fr 200px; gap: 16px; }
+  .grid-3    { display: grid; grid-template-columns: 1fr 1fr 1fr;   gap: 16px; }
+  .grid-2-1  { display: grid; grid-template-columns: 2fr 1fr;       gap: 16px; }
+  .grid-1-2  { display: grid; grid-template-columns: 1fr 2fr;       gap: 16px; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--gray-card);
+    border-radius: 12px;
+    border: 1px solid var(--gray-border);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 14px 20px 10px;
+    border-bottom: 1px solid var(--gray-border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .card-title {
+    font-size: 12px; font-weight: 700; color: var(--blue-dark); letter-spacing: 0.2px;
+  }
+  .card-tag {
+    font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 8px;
+    background: var(--blue-light); color: var(--blue-mid);
+  }
+  .card-body { padding: 16px 20px; }
+  .card-body.no-pad { padding: 0; }
+
+  /* ── CHART CONTAINERS ── */
+  .chart-wrap { position: relative; }
+  .chart-wrap.h200 { height: 200px; }
+  .chart-wrap.h220 { height: 220px; }
+  .chart-wrap.h250 { height: 250px; }
+  .chart-wrap.h280 { height: 280px; }
+
+  /* ── RANK LIST ── */
+  .rank-list { display: flex; flex-direction: column; gap: 6px; }
+  .rank-item {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .rank-num {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--blue-dark); color: #fff;
+    font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .rank-bar-wrap { flex: 1; }
+  .rank-label {
+    font-size: 10px; font-weight: 600; color: var(--text-dark); margin-bottom: 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px;
+  }
+  .rank-bar-bg {
+    height: 5px; background: var(--gray-bg); border-radius: 3px; overflow: hidden;
+  }
+  .rank-bar-fill {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--blue-mid), #5BA4E5);
+  }
+  .rank-val {
+    font-size: 11px; font-weight: 700; color: var(--blue-dark);
+    min-width: 30px; text-align: right;
+  }
+
+  /* ── TAG PILLS ── */
+  .tag-section { margin-bottom: 14px; }
+  .tag-section-title {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .pills-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill {
+    font-size: 10px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px;
+    display: flex; align-items: center; gap: 5px;
+    cursor: default;
+  }
+  .pill .pill-count {
+    background: rgba(0,0,0,0.12); border-radius: 10px;
+    padding: 1px 5px; font-size: 9px;
+  }
+
+  /* ── ALERT CARDS ── */
+  .alerts-grid { display: flex; flex-direction: column; gap: 8px; }
+  .alert-card {
+    border-radius: 8px; padding: 12px 14px;
+    display: flex; gap: 12px; align-items: flex-start;
+    border-left: 3px solid;
+  }
+  .alert-card.red    { background: var(--red-lt);    border-color: var(--red);    }
+  .alert-card.orange { background: var(--orange-lt); border-color: var(--orange); }
+  .alert-card.yellow { background: var(--yellow-lt); border-color: var(--yellow); }
+  .alert-card.blue   { background: var(--blue-light); border-color: var(--blue-mid); }
+  .alert-icon { font-size: 16px; line-height: 1; flex-shrink: 0; margin-top: 1px; }
+  .alert-title {
+    font-size: 11px; font-weight: 700; margin-bottom: 3px;
+  }
+  .alert-card.red    .alert-title { color: var(--red);    }
+  .alert-card.orange .alert-title { color: var(--orange); }
+  .alert-card.yellow .alert-title { color: #855900;       }
+  .alert-card.blue   .alert-title { color: var(--blue-mid); }
+  .alert-desc { font-size: 10px; font-weight: 500; color: var(--text-mid); line-height: 1.5; }
+
+  /* ── ACTION TABLE ── */
+  .action-table { width: 100%; border-collapse: collapse; }
+  .action-table th {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--text-light);
+    padding: 8px 12px; background: var(--gray-bg);
+    border-bottom: 1px solid var(--gray-border);
+    text-align: left;
+  }
+  .action-table td {
+    font-size: 11px; font-weight: 500; color: var(--text-dark);
+    padding: 10px 12px; border-bottom: 1px solid var(--gray-border);
+    vertical-align: top;
+  }
+  .action-table tr:last-child td { border-bottom: none; }
+  .action-table tr:nth-child(even) td { background: var(--gray-bg); }
+  .priority {
+    font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 10px;
+    white-space: nowrap;
+  }
+  .priority.alta    { background: var(--red-lt);    color: var(--red);    }
+  .priority.media   { background: var(--orange-lt); color: var(--orange); }
+  .priority.processo{ background: var(--blue-light); color: var(--blue-mid); }
+  .priority.cap     { background: var(--green-lt);  color: var(--green);  }
+  .impact-bar {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .impact-fill {
+    height: 6px; border-radius: 3px; background: var(--blue-mid);
+  }
+  .impact-pct { font-size: 10px; font-weight: 700; color: var(--blue-mid); }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center; padding: 20px;
+    font-size: 10px; font-weight: 500; color: var(--text-light);
+    border-top: 1px solid var(--gray-border); margin-top: 8px;
+  }
+
+  /* ── TABS ── */
+  .tab-bar {
+    display: flex; gap: 4px; padding: 0 32px;
+    background: var(--blue-dark); border-bottom: 3px solid var(--blue-mid);
+  }
+  .tab-btn {
+    padding: 11px 22px; cursor: pointer; border: none; background: transparent;
+    font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 600;
+    color: rgba(255,255,255,0.55); border-bottom: 3px solid transparent;
+    margin-bottom: -3px; transition: color .2s, border-color .2s; letter-spacing: .4px;
+  }
+  .tab-btn:hover { color: rgba(255,255,255,0.85); }
+  .tab-btn.active { color: #fff; border-bottom-color: #fff; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── AUDIT SECTION ── */
+  .audit-kpi-strip { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+  .audit-kpi {
+    flex: 1; min-width: 140px; background: #fff;
+    border-radius: 10px; padding: 16px 18px;
+    border-left: 4px solid var(--blue-mid);
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .audit-kpi.green  { border-left-color: var(--green); }
+  .audit-kpi.red    { border-left-color: var(--red); }
+  .audit-kpi.orange { border-left-color: var(--orange); }
+  .audit-kpi.yellow { border-left-color: var(--yellow); }
+  .audit-kpi-label { font-size: 10px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; }
+  .audit-kpi-value { font-size: 26px; font-weight: 800; color: var(--blue-dark); line-height: 1.1; }
+  .audit-kpi-sub   { font-size: 10px; color: var(--text-mid); margin-top: 3px; }
+
+  .version-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .version-table th {
+    background: var(--blue-dark); color: #fff; padding: 8px 10px;
+    text-align: left; font-weight: 600; font-size: 10px; letter-spacing: .5px;
+  }
+  .version-table th:last-child { text-align: left; }
+  .version-table td { padding: 8px 10px; border-bottom: 1px solid var(--gray-border); color: var(--text-mid); vertical-align: top; }
+  .version-table tr:last-child td { border-bottom: none; }
+  .version-table tr:hover td { background: var(--blue-light); }
+  .pct-bar-wrap { width: 90px; display: inline-block; vertical-align: middle; margin-left: 6px; }
+  .pct-bar-bg { height: 6px; background: var(--gray-border); border-radius: 3px; }
+  .pct-bar-fill { height: 6px; border-radius: 3px; }
+  .badge-status {
+    display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 9px; font-weight: 700; letter-spacing: .4px;
+  }
+  .badge-status.ok      { background: #E6F4EA; color: #1E7E34; }
+  .badge-status.prog    { background: #FFF3CD; color: #856404; }
+  .badge-status.plan    { background: #E2E8F0; color: #4A5568; }
+  .cat-pill {
+    display: inline-block; padding: 2px 7px; border-radius: 8px;
+    font-size: 9px; font-weight: 700; margin-right: 3px;
+  }
+  .cat-pill.mel { background: #D6E4F0; color: #1F3864; }
+  .cat-pill.bug { background: #FCE4E4; color: #C00000; }
+  .cat-pill.prj { background: #E6F4EA; color: #1E7E34; }
+
+  .info-banner {
+    background: var(--blue-light); border-left: 3px solid var(--blue-mid);
+    border-radius: 6px; padding: 10px 14px; margin-bottom: 14px;
+    font-size: 10px; color: var(--text-mid); line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <h1>Dashboard de Suporte — Apolar Imóveis</h1>
+    <p>Análise de Tickets · Jan–Ago 2026 · Base: 4.149 tickets · Atualizado em 05/09/2026</p>
+  </div>
+  <div class="header-right">
+    <span class="badge">Jan–Ago 2026</span>
+    <span class="badge">Movidesk</span>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('suporte')">📊 Suporte</button>
+  <button class="tab-btn" onclick="switchTab('auditoria')">✅ Auditorias de Versão</button>
+</div>
+
+<!-- TAB: SUPORTE -->
+<div id="tab-suporte" class="tab-panel active">
+<div class="main">
+
+  <!-- KPIs -->
+  <div class="section-label">Indicadores Gerais</div>
+  <div class="kpi-strip">
+    <div class="kpi" style="--kpi-color:#2E75B6">
+      <div class="kpi-label">Total de Tickets</div>
+      <div class="kpi-value">4.149</div>
+      <div class="kpi-sub">Jan–Ago 2026</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#C55A11">
+      <div class="kpi-label">Tickets Agosto</div>
+      <div class="kpi-value">549</div>
+      <div class="kpi-sub">Mês completo</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#2E75B6">
+      <div class="kpi-label">SLA de Solução (Geral)<span class="info-icon" title="Tickets resolvidos pelo suporte ou pela tech dentro do prazo definido">i</span></div>
+      <div class="kpi-value">77,4%</div>
+      <div class="kpi-sub">3.094 no prazo de 4.000 tickets</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#1F3864">
+      <div class="kpi-label">SLA de Solução (Suporte)<span class="info-icon" title="Tickets de responsabilidade apenas do suporte, resolvidos dentro do prazo definido">i</span></div>
+      <div class="kpi-value">80,0%</div>
+      <div class="kpi-sub">Erivelton Camargo · Ryan Puglisi — 2.052 no prazo de 2.565</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#375623">
+      <div class="kpi-label">Tickets de Orientação<span class="info-icon" title="Tickets que foram categorizados como &quot;orientação&quot; pelo suporte, indicando falta de conhecimento do usuário no assunto.">i</span></div>
+      <div class="kpi-value">420</div>
+      <div class="kpi-sub">Pico em março, queda forte em agosto — Jan:33 / Fev:53 / Mar:80 / Abr:47 / Mai:44 / Jun:50 / Jul:75 / Ago:38</div>
+    </div>
+    <div class="kpi" style="--kpi-color:#F0A500">
+      <div class="kpi-label">Redução c/ Endereços<span class="info-icon" title="Proporção de tickets que poderiam ser eliminados ao integrarmos com uma base de endereço em tempo real">i</span></div>
+      <div class="kpi-value">11,8%</div>
+      <div class="kpi-sub">488 tickets elimináveis</div>
+    </div>
+  </div>
+
+  <!-- EVOLUÇÃO MENSAL -->
+  <div class="section-label">Evolução Mensal</div>
+  <div class="grid-2-mini">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Volume Total de Tickets por Mês</span>
+        <span class="card-tag">Jan–Ago</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h250">
+          <canvas id="chartMensal"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Tickets por Categoria e Mês</span>
+        <span class="card-tag">Empilhado</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h250">
+          <canvas id="chartCategoria"></canvas>
+        </div>
+        <div style="font-size:9px;color:var(--text-light);margin-top:6px;font-style:italic">* Categoria bruta atribuída no Movidesk na abertura do ticket. Difere do indicador "Bugs Confirmados", que desconsidera tickets abertos como Bug mas identificados como erro do usuário, orientação ou treinamento.</div>
+      </div>
+    </div>
+
+    <div class="card" style="display:flex;flex-direction:column">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--red)">% Bugs Confirmados<span class="info-icon" title="Proporção de tickets confirmados como bugs após análise do suporte">i</span></span>
+      </div>
+      <div class="card-body" style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px">
+        <div>
+          <div style="font-size:10px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px">Agosto (mês)</div>
+          <div style="font-size:30px;font-weight:800;color:var(--red);line-height:1">87,3%</div>
+          <div style="font-size:10px;color:var(--text-light);margin-top:2px">144 confirmados de 165 abertos como Bug</div>
+        </div>
+        <div style="border-top:1px solid var(--gray-border);padding-top:14px">
+          <div style="font-size:10px;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px">Jan–Ago (ano)</div>
+          <div style="font-size:30px;font-weight:800;color:var(--blue-dark);line-height:1">81,3%</div>
+          <div style="font-size:10px;color:var(--text-light);margin-top:2px">1.137 confirmados de 1.398 abertos como Bug</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SLA -->
+  <div class="section-label">SLA</div>
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">SLA de Solução Suporte</span>
+        <span class="card-tag">Erivelton Camargo · Ryan Puglisi</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h250">
+          <canvas id="chartSlaSolucao"></canvas>
+        </div>
+        <div style="font-size:9px;color:var(--text-light);margin-top:6px;font-style:italic">* Esse indicador considera apenas os tickets de responsabilidade do suporte.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">SLA de Resposta</span>
+        <span class="card-tag">Todos os tickets</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h250">
+          <canvas id="chartSlaResposta"></canvas>
+        </div>
+        <div style="font-size:9px;color:var(--text-light);margin-top:6px;font-style:italic">* Esse indicador considera todos os tickets independente do setor responsável no momento.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SERVIÇOS E TAGS -->
+  <div class="section-label">Serviços e Tags</div>
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Top 10 Serviços — Total Jan–Ago 2026</span>
+        <span class="card-tag">Ranking</span>
+      </div>
+      <div class="card-body">
+        <div class="rank-list" id="rankServicos"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Top 5 Serviços em Bugs Confirmados</span>
+        <span class="card-tag" style="background:var(--red-lt);color:var(--red)">Jan–Ago</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200">
+          <canvas id="chartTags"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="grid-1" style="margin-top:16px">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Top 3 Serviços por Mês — 2026</span>
+        <span class="card-tag">Colunas paralelas</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h280">
+          <canvas id="chartTop3Mensal"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label" style="justify-content:space-between">
+    <span>Top 3 Serviços e Assuntos Recorrentes por Categoria <span id="catServicosPeriodoLabel" style="font-size:10px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--text-light)">&nbsp;· Jan–Ago 2026</span></span>
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin:-8px 0 12px">
+    <div style="display:inline-flex;background:var(--gray-bg);border-radius:20px;padding:3px;gap:2px">
+      <button id="btnCatServicosAno" onclick="filtrarCatServicos('ano')" style="border:none;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;padding:6px 14px;border-radius:16px;background:var(--blue-dark);color:#fff;transition:all .2s">Ano Todo (Jan–Ago)</button>
+      <button id="btnCatServicosMes" onclick="filtrarCatServicos('mes')" style="border:none;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;padding:6px 14px;border-radius:16px;background:transparent;color:var(--text-mid);transition:all .2s">Último Mês (Agosto)</button>
+    </div>
+  </div>
+  <div class="grid-4">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--red)">🐛 Bug</span>
+        <span class="card-tag" id="catTagBug" style="background:var(--red-lt);color:var(--red)">1.398</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:10px">
+          <canvas id="chartCatServicosBug"></canvas>
+        </div>
+        <div style="font-size:9px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px">Outros serviços recorrentes</div>
+        <div class="pills-wrap" id="pillsBug">
+          <div class="pill" style="background:#FCE4E4;color:var(--red);font-size:9px">CRM Problemas <span class="pill-count">83</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red);font-size:9px">Ajuste Acesso Locação <span class="pill-count">77</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red);font-size:9px">Ajuste Acesso Vendas <span class="pill-count">73</span></div>
+        </div>
+        <div id="assuntoLiderBug" style="font-size:9px;color:var(--text-light);margin-top:8px;font-style:italic">Assunto mais comum no líder (Contrato): "Cadastro de Ramo de Atividade" (5x)</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--blue-mid)">📋 Solicitação</span>
+        <span class="card-tag" id="catTagSolicitacao" style="background:var(--blue-light);color:var(--blue-mid)">2.476</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:10px">
+          <canvas id="chartCatServicosSolicitacao"></canvas>
+        </div>
+        <div style="font-size:9px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px">Outros serviços recorrentes</div>
+        <div class="pills-wrap" id="pillsSolicitacao">
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid);font-size:9px">Endereço - Ajuste <span class="pill-count">86</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid);font-size:9px">Ajuste Acesso Vendas <span class="pill-count">77</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid);font-size:9px">Relatório <span class="pill-count">69</span></div>
+        </div>
+        <div id="assuntoLiderSolicitacao" style="font-size:9px;color:var(--text-light);margin-top:8px;font-style:italic">Assunto mais comum no líder (Credenciamento): "Sol. de Descredenciamento" (363x)</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:#855900">💡 Melhoria</span>
+        <span class="card-tag" id="catTagMelhoria" style="background:var(--yellow-lt);color:#855900">172</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:10px">
+          <canvas id="chartCatServicosMelhoria"></canvas>
+        </div>
+        <div style="font-size:9px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px">Outros serviços recorrentes</div>
+        <div class="pills-wrap" id="pillsMelhoria">
+          <div class="pill" style="background:var(--yellow-lt);color:#855900;font-size:9px">Proposta <span class="pill-count">9</span></div>
+          <div class="pill" style="background:var(--yellow-lt);color:#855900;font-size:9px">Área do Cliente <span class="pill-count">8</span></div>
+          <div class="pill" style="background:var(--yellow-lt);color:#855900;font-size:9px">Sugestões (Locação) <span class="pill-count">7</span></div>
+        </div>
+        <div id="assuntoLiderMelhoria" style="font-size:9px;color:var(--text-light);margin-top:8px;font-style:italic">Sem assunto recorrente no líder — pautas variadas e pontuais</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--green)">❓ Dúvida</span>
+        <span class="card-tag" id="catTagDuvida" style="background:var(--green-lt);color:var(--green)">103</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:10px">
+          <canvas id="chartCatServicosDuvida"></canvas>
+        </div>
+        <div style="font-size:9px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px">Outros serviços recorrentes</div>
+        <div class="pills-wrap" id="pillsDuvida">
+          <div class="pill" style="background:var(--green-lt);color:var(--green);font-size:9px">Proposta <span class="pill-count">6</span></div>
+          <div class="pill" style="background:var(--green-lt);color:var(--green);font-size:9px">CRM Ajustes <span class="pill-count">5</span></div>
+          <div class="pill" style="background:var(--green-lt);color:var(--green);font-size:9px">Integração Leads <span class="pill-count">4</span></div>
+        </div>
+        <div id="assuntoLiderDuvida" style="font-size:9px;color:var(--text-light);margin-top:8px;font-style:italic">Sem assunto recorrente no líder — cada ticket com uma referência distinta</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- AJUSTE BD -->
+  <div class="section-label" style="justify-content:space-between">
+    <span style="display:flex;align-items:center;gap:8px">Análise: Tag Ajuste BD <span id="ajusteBDTotalLabel">— 581 tickets (14,0% do total)</span></span>
+    <span style="flex:0"></span>
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin:-8px 0 12px">
+    <div style="display:inline-flex;background:var(--gray-bg);border-radius:20px;padding:3px;gap:2px">
+      <button id="btnAjusteBDAno" onclick="filtrarAjusteBD('ano')" style="border:none;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;padding:6px 14px;border-radius:16px;background:var(--blue-dark);color:#fff;transition:all .2s">Ano Todo (Jan–Ago)</button>
+      <button id="btnAjusteBDMes" onclick="filtrarAjusteBD('mes')" style="border:none;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;padding:6px 14px;border-radius:16px;background:transparent;color:var(--text-mid);transition:all .2s">Último Mês (Agosto)</button>
+    </div>
+  </div>
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Top Serviços com Ajuste BD</span>
+        <span class="card-tag" id="ajusteBDServicosTag">Intervenção direta no banco</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h250">
+          <canvas id="chartAjusteBDServicos"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Evolução Mensal — Ajuste BD</span>
+        <span class="card-tag" id="ajusteBDMensalTag">Jan–Ago</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:14px">
+          <canvas id="chartAjusteBDMensal"></canvas>
+        </div>
+        <div id="ajusteBDBanner" style="background:var(--yellow-lt);border-left:3px solid var(--yellow);border-radius:6px;padding:10px 12px;margin-top:4px">
+          <div style="font-size:10px;font-weight:700;color:#855900;margin-bottom:3px">⚠️ Atenção</div>
+          <div id="ajusteBDBannerTexto" style="font-size:10px;color:var(--text-mid);line-height:1.5">
+            Ajuste BD significa que o suporte precisou corrigir dados <strong>diretamente no banco de dados</strong> — sem solução pela interface do sistema. Volume alto ao longo de todo o período, com leve queda em julho, indica problemas estruturais recorrentes no ApolarNET de Locação, especialmente no módulo de Contrato (138 tickets, 25,4% de todos os Ajustes BD).
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          <div style="font-size:10px;font-weight:700;color:var(--text-mid);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.8px">Principais assuntos</div>
+          <div class="pills-wrap" id="ajusteBDPills">
+            <div class="pill" style="background:var(--yellow-lt);color:#855900">Reprocessar COBST <span class="pill-count">7</span></div>
+            <div class="pill" style="background:var(--yellow-lt);color:#855900">Cadastro de Ramo de Atividade <span class="pill-count">5</span></div>
+            <div class="pill" style="background:var(--yellow-lt);color:#855900">Integração Cheques Everest <span class="pill-count">5</span></div>
+            <div class="pill" style="background:var(--yellow-lt);color:#855900">Imóveis Locados <span class="pill-count">5</span></div>
+            <div class="pill" style="background:var(--yellow-lt);color:#855900">Mudança de Período de Recibo <span class="pill-count">3</span></div>
+            <div class="pill" style="background:var(--yellow-lt);color:#855900">Erro Geração de Extrato Mensal <span class="pill-count">3</span></div>
+            <div class="pill" style="background:var(--yellow-lt);color:#855900">Alteração de Fiança <span class="pill-count">3</span></div>
+            <div class="pill" style="background:var(--yellow-lt);color:#855900">Cadastro de Profissão <span class="pill-count">3</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAGS QUALITATIVAS -->
+  <div class="section-label">Tags Qualitativas — Bugs, Orientação & Treinamento</div>
+  <div class="grid-3">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--red)">🐛 Erros de Sistema (Bug)</span>
+        <span class="card-tag" style="background:var(--red-lt);color:var(--red)">1.137 confirmados</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:12px">
+          <canvas id="chartBugs"></canvas>
+        </div>
+        <div class="pills-wrap">
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Contrato Locação <span class="pill-count">146</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Proposta <span class="pill-count">72</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Ajuste Acesso Locação <span class="pill-count">70</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Opção Vendas <span class="pill-count">67</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">CRM Problemas <span class="pill-count">64</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Ajuste Acesso Vendas <span class="pill-count">60</span></div>
+        </div>
+        <div style="font-size:9px;color:var(--text-light);margin-top:8px;font-style:italic">* Exclui tickets categorizados como Bug que possuem tag "Erro do usuário", "Orientação" ou "Necessita treinamento" sem também ter a tag "Erro do Sistema (BUG)" — indício de que o ticket foi aberto como bug mas não era.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--blue-mid)">📘 Orientação</span>
+        <span class="card-tag">420 tickets · pico em março</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:12px">
+          <canvas id="chartOrientacao"></canvas>
+        </div>
+        <div class="pills-wrap">
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Opção de Venda <span class="pill-count">59</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Ajuste de Acesso <span class="pill-count">25</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">CRM Problemas <span class="pill-count">24</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Proposta <span class="pill-count">18</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Distribuição de Leads <span class="pill-count">17</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">CRM Ajustes <span class="pill-count">16</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--green)">🎓 Necessita Treinamento</span>
+        <span class="card-tag" style="background:var(--green-lt);color:var(--green)">55 tickets</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:12px">
+          <canvas id="chartTreinamento"></canvas>
+        </div>
+        <div class="pills-wrap">
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">Opção de Venda <span class="pill-count">13</span></div>
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">CRM Problemas <span class="pill-count">5</span></div>
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">Ajuste de Acesso <span class="pill-count">5</span></div>
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">Proposta <span class="pill-count">3</span></div>
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">Novo Colaborador <span class="pill-count">3</span></div>
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">Distribuição de Leads <span class="pill-count">3</span></div>
+        </div>
+        <div style="font-size:9px;color:var(--text-light);margin-top:8px;font-style:italic">* Nenhum ticket de treinamento registrado em agosto — total do período ficou estável em 55.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAGS QUALITATIVAS — JULHO (recorte mensal) -->
+  <div class="section-label">Principais Serviços por Tag — Agosto 2026 <span style="font-size:10px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--text-light)">&nbsp;· recorte do último mês</span></div>
+  <div class="grid-3">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--red)">🐛 Bug — Agosto</span>
+        <span class="card-tag" style="background:var(--red-lt);color:var(--red)">144 confirmados em Agosto</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:12px">
+          <canvas id="chartBugsJun"></canvas>
+        </div>
+        <div class="pills-wrap">
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Opção <span class="pill-count">11</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Ajuste Acesso Locação <span class="pill-count">11</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Ajuste Acesso Vendas <span class="pill-count">10</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">CRM Ajustes <span class="pill-count">9</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Proposta <span class="pill-count">8</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Portal Fora do Ar <span class="pill-count">6</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--blue-mid)">📘 Orientação — Agosto</span>
+        <span class="card-tag">38 em Agosto</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:12px">
+          <canvas id="chartOrientacaoJun"></canvas>
+        </div>
+        <div class="pills-wrap">
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Opção de Venda <span class="pill-count">5</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Integração de Leads <span class="pill-count">3</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Ajuste de Acesso <span class="pill-count">3</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">Distribuição de Leads <span class="pill-count">3</span></div>
+          <div class="pill" style="background:var(--blue-light);color:var(--blue-mid)">CRM Ajustes <span class="pill-count">2</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--green)">🎓 Treinamento — Agosto</span>
+        <span class="card-tag" style="background:var(--green-lt);color:var(--green)">0 em Agosto</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h200" style="margin-bottom:12px;display:flex;align-items:center;justify-content:center">
+          <div style="text-align:center;color:var(--text-light);font-size:11px">Nenhum ticket com tag<br>"Necessita treinamento" em agosto</div>
+        </div>
+        <div class="pills-wrap">
+          <div class="pill" style="background:var(--green-lt);color:var(--green)">— sem registros —</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ALERTAS -->
+  <div class="section-label">Alertas</div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">⚠️ Alertas Ativos</span>
+      </div>
+      <div class="card-body">
+        <div class="alerts-grid">
+          <div class="alert-card red">
+            <div class="alert-icon">🔴</div>
+            <div>
+              <div class="alert-title">CRM Apolar Sales — Volta ao Topo dos Bugs Confirmados</div>
+              <div class="alert-desc">167 bugs confirmados Jan–Ago (Jan:16 / Fev:17 / Mar:41 / Abr:14 / Mai:12 / Jun:21 / Jul:18 / Ago:28). Agosto teve o 2º maior volume do período (+56% vs julho) e retomou a liderança entre todos os serviços — superando Ajuste de Acesso e Opção. Mais da metade dos casos de agosto envolve acesso/login ao Sales ou ajustes de configuração de corretores, sugerindo sobrecarga operacional no provisionamento de contas, não apenas bugs pontuais.</div>
+            </div>
+          </div>
+          <div class="alert-card orange">
+            <div class="alert-icon">🟠</div>
+            <div>
+              <div class="alert-title">Ajuste de Acesso — Terceiro Mês Consecutivo Acima de 20 Bugs</div>
+              <div class="alert-desc">130 bugs confirmados Jan–Ago, somando Locação e Vendas (Jan:12 / Fev:10 / Mar:19 / Abr:17 / Mai:12 / Jun:17 / Jul:22 / Ago:21). Desde junho, o volume mensal não cai abaixo de 17 — um patamar bem mais alto que o observado até maio. Concentrado em liberação/desbloqueio de acesso e revogações, indicando processo de provisionamento sobrecarregado.</div>
+            </div>
+          </div>
+          <div class="alert-card orange">
+            <div class="alert-icon">🟠</div>
+            <div>
+              <div class="alert-title">Portal Apolar — Instabilidade Recorrente</div>
+              <div class="alert-desc">264 tickets Jan–Ago relacionados ao Portal Apolar, com pico em março (56 tickets, +143% vs janeiro). Desde maio, o volume se estabilizou entre 26-31 tickets/mês, incluindo agosto (27). Padrão consistente com deploys sem comunicação prévia à rede.</div>
+            </div>
+          </div>
+          <div class="alert-card blue">
+            <div class="alert-icon">🔵</div>
+            <div>
+              <div class="alert-title">Contrato (Locação) — Queda Sustentada, Praticamente Resolvido</div>
+              <div class="alert-desc">Jan:26 / Fev:21 / Mar:46 / Abr:17 / Mai:14 / Jun:13 / Jul:5 / Ago:4. Total: 146 bugs confirmados. Depois de liderar o ranking de bugs por 5 meses seguidos, Contrato caiu para o menor volume do período nos últimos dois meses — sinal de que a revisão do módulo (item do Plano de Ação) surtiu efeito. Tag "Orientação" também caiu forte em agosto (38, -49% vs julho), após 3 meses em alta.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AÇÕES -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">✅ Plano de Ação</span>
+        <span class="card-tag">4 ações priorizadas</span>
+      </div>
+      <div class="card-body no-pad">
+        <table class="action-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Ação</th>
+              <th>Prioridade</th>
+              <th>Impacto</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1</strong></td>
+              <td>
+                <strong>Postmortem CRM Apolar Sales — acesso e configuração</strong><br>
+                <span style="color:var(--text-light);font-size:10px">Voltou a ser o maior gerador de bugs confirmados — 167 bugs Jan–Ago, com 28 só em agosto (+56% vs julho), mais da metade ligados a acesso/login e ajustes de conta</span>
+              </td>
+              <td><span class="priority alta">Alta</span></td>
+              <td>
+                <div class="impact-bar">
+                  <div class="impact-fill" style="width:130px"></div>
+                  <span class="impact-pct">−167 bugs</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>2</strong></td>
+              <td>
+                <strong>Padronizar processo de liberação/redefinição de acesso</strong><br>
+                <span style="color:var(--text-light);font-size:10px">130 bugs Jan–Ago, 3º mês seguido acima de 17 (Jun:17 / Jul:22 / Ago:21) — patamar bem mais alto que o 1º semestre</span>
+              </td>
+              <td><span class="priority alta">Alta</span></td>
+              <td>
+                <div class="impact-bar">
+                  <div class="impact-fill" style="width:105px"></div>
+                  <span class="impact-pct">−130 bugs</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>3</strong></td>
+              <td>
+                <strong>Integração base de endereços em tempo real</strong><br>
+                <span style="color:var(--text-light);font-size:10px">Elimina tickets de cadastro/ajuste de endereço — 488 tickets elimináveis</span>
+              </td>
+              <td><span class="priority alta">Alta</span></td>
+              <td>
+                <div class="impact-bar">
+                  <div class="impact-fill" style="width:120px"></div>
+                  <span class="impact-pct">−11,8%</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>4</strong></td>
+              <td>
+                <strong>Capacitação: Opção de Venda + Ajuste de Acesso + CRM Sales</strong><br>
+                <span style="color:var(--text-light);font-size:10px">Vídeos, FAQ e webinar mensal para a rede — maior causa de Orientação, mesmo após queda em agosto</span>
+              </td>
+              <td><span class="priority cap">Capacitação</span></td>
+              <td>
+                <div class="impact-bar">
+                  <div class="impact-fill" style="width:90px;background:var(--green)"></div>
+                  <span class="impact-pct" style="color:var(--green)">~−250 tk</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANÁLISE QUALITATIVA — BUGS CRÍTICOS DE JULHO -->
+  <div class="section-label">Análise Qualitativa — Bugs Críticos de Agosto <span style="font-size:10px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--text-light)">&nbsp;· leitura de assunto e descrição · apenas bugs confirmados · CRM (28), Ajuste de Acesso (21) e Opção (11)</span></div>
+  <div class="info-banner">
+    ℹ️ Esta seção considera apenas <strong>bugs confirmados</strong>: tickets categorizados como Bug que não possuem a tag "Erro do usuário", "Orientação" ou "Necessita treinamento" sem também ter a tag "Erro do Sistema (BUG)" — ou seja, exclui tickets abertos como bug mas que a própria equipe identificou como não sendo, de fato, um erro de sistema. Vale destacar: em agosto, CRM retomou a liderança isolada (28, vs 18 em julho), enquanto Contrato e Proposta caíram para fora do top 3 (4 e 8 bugs, respectivamente).
+  </div>
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--red)">🐛 CRM Apolar Sales — 28 bugs confirmados em Agosto</span>
+        <span class="card-tag" style="background:var(--red-lt);color:var(--red)">+56% vs Julho · retomou a liderança</span>
+      </div>
+      <div class="card-body">
+        <div class="pills-wrap" style="margin-bottom:12px">
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Ajustes de Configuração/Cadastro <span class="pill-count">8</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Acesso/Login ao Sales <span class="pill-count">7</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Integração de Leads/Portais <span class="pill-count">4</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Problemas Diversos no CRM <span class="pill-count">4</span></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-mid);line-height:1.7">
+          <strong style="color:var(--text-dark)">1. Ajustes de configuração/cadastro é o maior grupo (8 de 28 tickets).</strong> Inserir corretores no Sales (#40757), vincular formulário de angariação (#40845), corrigir duplicidade na identificação de card (#40910), habilitar opção (#40601), acesso às lojas da Região 0 (#40537) e ajustes de horário/notificação de card (#40519, #40897) — sugerem que boa parte do trabalho do suporte no CRM é configuração manual que poderia ser self-service.<br><br>
+          <strong style="color:var(--text-dark)">2. Acesso/login ao Sales (7 tickets)</strong> — corretores desconectados ou sem conseguir logar mesmo após tentativas (#40536, #40904, #40467, #40752, #40809, #40537, #40354). Somado ao grupo de ajustes, mais da metade dos bugs de CRM em agosto (15 de 28) está ligada a acesso/configuração de conta, não a falhas de sistema.<br><br>
+          <strong style="color:var(--text-dark)">3. Integração de leads/portais (4 tickets)</strong> — falha na integração com Meta Ads (#40393), recuperação de acesso ao Google Meu Negócio/Meta Business (#40925), solicitação de XML (#40708) e problema com URL de origem (#40913).<br><br>
+          <strong style="color:var(--text-dark)">4. Problemas diversos (4 tickets)</strong> — geração de leads travando (#40606), referência indisponível para criar proposta no card (#40490), leads específicos sumindo (#40751) e avisos incorretos (#40773).
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" style="color:var(--red)">🐛 Ajuste de Acesso (Locação + Vendas) — 21 bugs confirmados em Agosto</span>
+        <span class="card-tag" style="background:var(--red-lt);color:var(--red)">3º mês seguido acima de 17</span>
+      </div>
+      <div class="card-body">
+        <div class="pills-wrap" style="margin-bottom:12px">
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Liberação/Acesso Negado <span class="pill-count">13</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Config./Transferência de Loja <span class="pill-count">5</span></div>
+          <div class="pill" style="background:#FCE4E4;color:var(--red)">Revogação/Duplicidade <span class="pill-count">3</span></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-mid);line-height:1.7">
+          <strong style="color:var(--text-dark)">1. Liberação e acesso negado segue como maior causa (13 de 21 tickets).</strong> Corretora sem acesso ao ApolarNet e e-mail (#40728), login não funcionando em duas lojas simultaneamente (#40729), acesso a fotos negado (#40620) e múltiplas solicitações de "liberar acesso"/"desbloqueio" sem detalhe adicional (#40290, #40610, #40584, #40686, #40716, #40790, #40823, #40538, #40539, #40314) — mesmo padrão de sobrecarga no provisionamento observado em julho.<br><br>
+          <strong style="color:var(--text-dark)">2. Configuração/transferência entre lojas (5 tickets)</strong> — transferência de angariações para novo CNPJ (#40604), integração Apolar.net com AIA (#40455), botão de "enviar para avaliação" (#40629), cadastro de edifício/condomínio (#40502) e tabela de vistorias (#40560).<br><br>
+          <strong style="color:var(--text-dark)">3. Revogação/duplicidade de acesso (3 tickets)</strong> — acessos duplicados para o mesmo colaborador (#40850) e revogações urgentes de referência (#40860, #40578).
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="card-header">
+      <span class="card-title" style="color:var(--red)">🐛 Opção (Vendas) — 11 bugs confirmados em Agosto</span>
+      <span class="card-tag" style="background:var(--red-lt);color:var(--red)">3º serviço com mais bugs confirmados em Agosto</span>
+    </div>
+    <div class="card-body">
+      <div class="pills-wrap" style="margin-bottom:12px">
+        <div class="pill" style="background:#FCE4E4;color:var(--red)">Referência com Problema <span class="pill-count">4</span></div>
+        <div class="pill" style="background:#FCE4E4;color:var(--red)">Vencimento/Renovação <span class="pill-count">2</span></div>
+        <div class="pill" style="background:#FCE4E4;color:var(--red)">Anexos/Documentos <span class="pill-count">2</span></div>
+        <div class="pill" style="background:#FCE4E4;color:var(--red)">Erro ao Salvar/Alterar <span class="pill-count">2</span></div>
+      </div>
+      <div style="font-size:11px;color:var(--text-mid);line-height:1.7">
+        <strong style="color:var(--text-dark)">1. Referências com problema não detalhado (4 tickets)</strong> — tickets abertos citando apenas o número da referência (#40329, #40914, #40760, #40919), sem descrição do erro em si — indício de que o formulário de abertura de chamado pode estar sendo preenchido de forma incompleta pela rede.<br><br>
+        <strong style="color:var(--text-dark)">2. Vencimento/renovação (2 tickets)</strong> — contrato de intermediação vencido sem renovação automática aplicada (#40463, #40495), mesmo tema recorrente de meses anteriores.<br><br>
+        <strong style="color:var(--text-dark)">3. Anexos/documentos (2 tickets)</strong> — impossibilidade de incluir documentos no anexo da opção (#40856, #40833).<br><br>
+        <strong style="color:var(--text-dark)">4. Erro ao salvar/alterar (2 tickets)</strong> — erro ao salvar opção (#40387) e impossibilidade de alterar opção de lançamento já cadastrada (#40835).
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="card-header">
+      <span class="card-title">🔎 Leitura Combinada</span>
+      <span class="card-tag">CRM + Ajuste de Acesso + Opção</span>
+    </div>
+    <div class="card-body">
+      <div style="font-size:11px;color:var(--text-mid);line-height:1.7">
+        Em agosto, <strong style="color:var(--text-dark)">acesso e configuração de conta é o fio condutor entre os dois serviços mais críticos</strong>: tanto em CRM (15 de 28 bugs) quanto em Ajuste de Acesso (13 de 21 bugs), a maior parte dos chamados é sobre login, permissão ou provisionamento — não falha de sistema propriamente dita. Isso reforça a hipótese, já levantada no Plano de Ação, de que o gargalo está no processo/volume de solicitações de acesso, e não em bugs de código a serem corrigidos individualmente. Já Opção segue com o mesmo padrão observado em meses anteriores — status/dados que não refletem a realidade, mas em volume mais baixo (11) e com tickets menos detalhados (4 deles sem descrição clara do problema, o que dificulta o diagnóstico). Recomenda-se: (1) investigar se o provisionamento de acesso pode ser parcialmente automatizado ou self-service para reduzir o volume no CRM e no ApolarNET; e (2) reforçar com a rede a importância de detalhar o problema (não só a referência) ao abrir chamados de Opção.
+      </div>
+    </div>
+  </div>
+
+</div>
+</div><!-- /tab-suporte -->
+
+<!-- TAB: AUDITORIAS -->
+<div id="tab-auditoria" class="tab-panel">
+<div class="main">
+
+  <div class="section-label">Auditorias de Versão — Apolar NET</div>
+
+  <div class="info-banner">
+    ℹ️ Esta aba ainda não recebeu a nova base de dados de auditorias de versão. Os dados abaixo são os últimos disponíveis (Versões 10.2 a 10.6/C). Assim que você enviar a planilha atualizada, eu recalculo esta aba de forma independente da aba de Suporte.
+  </div>
+
+  <!-- KPIs de Auditoria -->
+  <div class="audit-kpi-strip">
+    <div class="audit-kpi green">
+      <div class="audit-kpi-label">Melhor aprovação</div>
+      <div class="audit-kpi-value">94,1%</div>
+      <div class="audit-kpi-sub">Versão 10.2 (Abr 2025)</div>
+    </div>
+    <div class="audit-kpi red">
+      <div class="audit-kpi-label">Menor aprovação</div>
+      <div class="audit-kpi-value">66,7%</div>
+      <div class="audit-kpi-sub">V10.5, A e C (empate)</div>
+    </div>
+    <div class="audit-kpi orange">
+      <div class="audit-kpi-label">Média geral</div>
+      <div class="audit-kpi-value">74,2%</div>
+      <div class="audit-kpi-sub">Versões 10.2 a C</div>
+    </div>
+    <div class="audit-kpi yellow">
+      <div class="audit-kpi-label">Versão em andamento</div>
+      <div class="audit-kpi-value">V10.6 / C</div>
+      <div class="audit-kpi-sub">Status: Em progresso</div>
+    </div>
+    <div class="audit-kpi" style="border-left-color:#1F3864">
+      <div class="audit-kpi-label">Total de itens auditados</div>
+      <div class="audit-kpi-value">560</div>
+      <div class="audit-kpi-sub">Versões 10.2 a C</div>
+    </div>
+  </div>
+
+  <!-- Gráficos -->
+  <div class="grid-2" style="margin-bottom:18px">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">% de Aprovação por Versão</span>
+        <span class="card-tag">Evolução</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h280">
+          <canvas id="chartAprovacao"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Composição por Categoria — Melhoria / Bug / Projeto</span>
+        <span class="card-tag">Empilhado</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap h280">
+          <canvas id="chartCategoriaAudit"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tabela detalhada -->
+  <div class="card" style="margin-bottom:18px">
+    <div class="card-header">
+      <span class="card-title">Detalhe por Versão</span>
+      <span class="card-tag">Todas as versões</span>
+    </div>
+    <div class="card-body" style="padding:0">
+      <table class="version-table">
+        <thead>
+          <tr>
+            <th>Versão</th>
+            <th>Período</th>
+            <th>Status</th>
+            <th>Total</th>
+            <th>Aprovados</th>
+            <th>% Aprovação</th>
+            <th>Categorias</th>
+            <th>Principal motivo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>10.2</strong></td>
+            <td>Mensal (Abr 2025)</td>
+            <td><span class="badge-status ok">Concluído</span></td>
+            <td>85</td>
+            <td>80</td>
+            <td>
+              <strong style="color:var(--green)">94,1%</strong>
+              <div class="pct-bar-wrap"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:94%;background:var(--green)"></div></div></div>
+            </td>
+            <td><span class="cat-pill mel">Mel: 63</span><span class="cat-pill bug">Bug: 11</span><span class="cat-pill prj">Prj: 0</span></td>
+            <td>Análise</td>
+          </tr>
+          <tr>
+            <td><strong>10.3</strong></td>
+            <td>Trimestral (Mai–Jul 2025)</td>
+            <td><span class="badge-status ok">Concluído</span></td>
+            <td>194</td>
+            <td>158</td>
+            <td>
+              <strong style="color:#2E75B6">81,4%</strong>
+              <div class="pct-bar-wrap"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:81%;background:#2E75B6"></div></div></div>
+            </td>
+            <td><span class="cat-pill mel">Mel: 167</span><span class="cat-pill bug">Bug: 27</span><span class="cat-pill prj">Prj: 0</span></td>
+            <td>Falta de alinhamento</td>
+          </tr>
+          <tr>
+            <td><strong>10.4</strong></td>
+            <td>Trimestral (Ago–Out 2025)</td>
+            <td><span class="badge-status ok">Concluído</span></td>
+            <td>103</td>
+            <td>83</td>
+            <td>
+              <strong style="color:#2E75B6">80,6%</strong>
+              <div class="pct-bar-wrap"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:81%;background:#2E75B6"></div></div></div>
+            </td>
+            <td><span class="cat-pill mel">Mel: 92</span><span class="cat-pill bug">Bug: 10</span><span class="cat-pill prj">Prj: 1</span></td>
+            <td>Falta de alinhamento</td>
+          </tr>
+          <tr>
+            <td><strong>10.5</strong></td>
+            <td>Bimestral (Nov–Dez 2025)</td>
+            <td><span class="badge-status ok">Concluído</span></td>
+            <td>60</td>
+            <td>40</td>
+            <td>
+              <strong style="color:var(--orange)">66,7%</strong>
+              <div class="pct-bar-wrap"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:67%;background:var(--orange)"></div></div></div>
+            </td>
+            <td><span class="cat-pill mel">Mel: 49</span><span class="cat-pill bug">Bug: 14</span><span class="cat-pill prj">Prj: 1</span></td>
+            <td>Falta de teste</td>
+          </tr>
+          <tr>
+            <td><strong>10.6</strong></td>
+            <td>Trimestral (Jan–Mar 2026)</td>
+            <td><span class="badge-status prog">Em progresso</span></td>
+            <td>59</td>
+            <td>40</td>
+            <td>
+              <strong style="color:var(--orange)">67,8%</strong>
+              <div class="pct-bar-wrap"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:68%;background:var(--orange)"></div></div></div>
+            </td>
+            <td><span class="cat-pill mel">Mel: 22</span><span class="cat-pill bug">Bug: 33</span><span class="cat-pill prj">Prj: 4</span></td>
+            <td>Não atingiu objetivo</td>
+          </tr>
+          <tr>
+            <td><strong>A</strong></td>
+            <td>Sprint A</td>
+            <td><span class="badge-status ok">Concluído</span></td>
+            <td>15</td>
+            <td>10</td>
+            <td>
+              <strong style="color:var(--orange)">66,7%</strong>
+              <div class="pct-bar-wrap"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:67%;background:var(--orange)"></div></div></div>
+            </td>
+            <td><span class="cat-pill mel">Mel: 7</span><span class="cat-pill bug">Bug: 6</span><span class="cat-pill prj">Prj: 2</span></td>
+            <td>Em implementação</td>
+          </tr>
+          <tr>
+            <td><strong>B</strong></td>
+            <td>Sprint B</td>
+            <td><span class="badge-status ok">Concluído</span></td>
+            <td>20</td>
+            <td>14</td>
+            <td>
+              <strong style="color:var(--orange)">70,0%</strong>
+              <div class="pct-bar-wrap"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:70%;background:var(--orange)"></div></div></div>
+            </td>
+            <td><span class="cat-pill mel">Mel: 10</span><span class="cat-pill bug">Bug: 9</span><span class="cat-pill prj">Prj: 1</span></td>
+            <td>Não atingiu objetivo</td>
+          </tr>
+          <tr>
+            <td><strong>C</strong></td>
+            <td>Sprint C</td>
+            <td><span class="badge-status prog">Em progresso</span></td>
+            <td>24</td>
+            <td>16</td>
+            <td>
+              <strong style="color:var(--orange)">66,7%</strong>
+              <div class="pct-bar-wrap"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:67%;background:var(--orange)"></div></div></div>
+            </td>
+            <td><span class="cat-pill mel">Mel: 5</span><span class="cat-pill bug">Bug: 18</span><span class="cat-pill prj">Prj: 1</span></td>
+            <td>Não atingiu objetivo</td>
+          </tr>
+          <tr>
+            <td><strong>10.7</strong></td>
+            <td>Trimestral (Abr–Jun 2026)</td>
+            <td><span class="badge-status plan">Planejado</span></td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+</div><!-- /tab-auditoria -->
+
+<div class="footer">
+  Apolar Imóveis · Dashboard de Suporte Jan–Ago 2026 · Dados: Movidesk · Atualizado em 05/09/2026</div>
+
+<script>
+const BLUE_DARK  = '#1F3864';
+const BLUE_MID   = '#2E75B6';
+const BLUE_LIGHT = '#D6E4F0';
+const ORANGE     = '#C55A11';
+const RED        = '#C00000';
+const GREEN      = '#375623';
+const YELLOW     = '#F0A500';
+const GRAY       = '#E2E8F0';
+
+const defaultFont = { family: 'Montserrat' };
+Chart.defaults.font.family = 'Montserrat';
+Chart.defaults.font.size   = 11;
+Chart.defaults.color       = '#4A5568';
+
+// ── 0. SLA DE SOLUÇÃO (Suporte) ───────────────────────────────────────────────
+new Chart(document.getElementById('chartSlaSolucao'), {
+  data: {
+    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago'],
+    datasets: [
+      {
+        type: 'bar',
+        label: 'Total (Suporte)',
+        data: [158, 179, 254, 359, 342, 385, 438, 450],
+        backgroundColor: 'rgba(46,117,182,0.35)',
+        borderRadius: 4,
+        barThickness: 34,
+        order: 2,
+      },
+      {
+        type: 'line',
+        label: 'No prazo',
+        data: [116, 127, 189, 275, 284, 288, 374, 399],
+        borderColor: GREEN,
+        backgroundColor: GREEN,
+        pointBackgroundColor: GREEN,
+        pointRadius: 5,
+        borderWidth: 2,
+        tension: 0.4,
+        fill: false,
+        order: 1,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top', align: 'start', labels: { boxWidth: 12, padding: 14, font: { size: 10 } } },
+      tooltip: {
+        callbacks: {
+          afterBody: (items) => {
+            const i = items[0].dataIndex;
+            const total = [158, 179, 254, 359, 342, 385, 438, 450][i];
+            const noPrazo = [116, 127, 189, 275, 284, 288, 374, 399][i];
+            const pct = Math.round((noPrazo/total)*100);
+            return `→ ${pct}% no prazo`;
+          }
+        }
+      }
+    },
+    scales: {
+      y: { beginAtZero: true, max: 500, grid: { color: '#F0F0F0' }, ticks: { stepSize: 50 } },
+      x: { grid: { display: false } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── 0b. SLA DE RESPOSTA (Todos os tickets) ────────────────────────────────────
+new Chart(document.getElementById('chartSlaResposta'), {
+  data: {
+    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago'],
+    datasets: [
+      {
+        type: 'bar',
+        label: 'Total de Tickets',
+        data: [435, 468, 644, 516, 485, 498, 554, 549],
+        backgroundColor: 'rgba(197,90,17,0.25)',
+        borderRadius: 4,
+        barThickness: 34,
+        order: 2,
+      },
+      {
+        type: 'line',
+        label: 'No prazo',
+        data: [247, 238, 327, 197, 205, 182, 248, 220],
+        borderColor: BLUE_MID,
+        backgroundColor: BLUE_MID,
+        pointBackgroundColor: BLUE_MID,
+        pointRadius: 5,
+        borderWidth: 2,
+        tension: 0.4,
+        fill: false,
+        order: 1,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top', align: 'start', labels: { boxWidth: 12, padding: 14, font: { size: 10 } } },
+      tooltip: {
+        callbacks: {
+          afterBody: (items) => {
+            const i = items[0].dataIndex;
+            const total = [435, 468, 644, 516, 485, 498, 554, 549][i];
+            const noPrazo = [247, 238, 327, 197, 205, 182, 248, 220][i];
+            const pct = Math.round((noPrazo/total)*100);
+            return `→ ${pct}% no prazo`;
+          }
+        }
+      }
+    },
+    scales: {
+      y: { beginAtZero: true, max: 700, grid: { color: '#F0F0F0' }, ticks: { stepSize: 100 } },
+      x: { grid: { display: false } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── 1. EVOLUÇÃO MENSAL ────────────────────────────────────────────────────────
+const mediaMensal = 518.6;
+new Chart(document.getElementById('chartMensal'), {
+  data: {
+    labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto'],
+    datasets: [
+      {
+        type: 'bar',
+        label: 'Tickets',
+        data: [435, 468, 644, 516, 485, 498, 554, 549],
+        backgroundColor: [BLUE_MID, BLUE_MID, ORANGE, BLUE_MID, BLUE_MID, BLUE_MID, BLUE_MID, BLUE_MID],
+        borderRadius: 6,
+        barThickness: 32,
+        order: 2,
+      },
+      {
+        type: 'line',
+        label: `Média (${mediaMensal.toFixed(0)})`,
+        data: Array(8).fill(mediaMensal),
+        borderColor: '#8A9BAE',
+        borderWidth: 2,
+        borderDash: [6, 4],
+        pointRadius: 0,
+        fill: false,
+        order: 1,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true, position: 'top', align: 'end',
+        labels: { boxWidth: 14, padding: 10, font: { size: 9 }, filter: item => item.text.startsWith('Média') }
+      },
+      tooltip: {
+        callbacks: {
+          afterLabel: (ctx) => {
+            if (ctx.datasetIndex === 1) return '';
+            const deltas = ['—', '+7,6%', '+37,6%', '-19,9%', '-6,0%', '+2,7%', '+11,2%', '-0,9%'];
+            return `Variação: ${deltas[ctx.dataIndex]}`;
+          }
+        }
+      }
+    },
+    scales: {
+      y: { beginAtZero: true, max: 800, grid: { color: '#F0F0F0' },
+           ticks: { stepSize: 100 } },
+      x: { grid: { display: false } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── 2. CATEGORIAS ─────────────────────────────────────────────────────────────
+new Chart(document.getElementById('chartCategoria'), {
+  type: 'bar',
+  data: {
+    labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto'],
+    datasets: [
+      { label: 'Bug/Problema',            data: [165, 154, 267, 148, 152, 163, 184, 165],  backgroundColor: RED,    borderRadius: 3 },
+      { label: 'Solicitação de Serviço',  data: [224, 281, 324, 326, 311, 303, 336, 371],  backgroundColor: BLUE_MID, borderRadius: 3 },
+      { label: 'Melhoria/Sugestão',       data: [34, 15, 22, 31, 11, 22, 28, 9],  backgroundColor: YELLOW, borderRadius: 3 },
+      { label: 'Dúvida',                  data: [12, 18, 31, 11, 11, 10, 6, 4],  backgroundColor: GREEN,  borderRadius: 3 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 10 } } },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => {
+            const datasets = ctx.chart.data.datasets;
+            const total = datasets.reduce((sum, ds) => sum + ds.data[ctx.dataIndex], 0);
+            const pct = Math.round((ctx.parsed.y / total) * 100);
+            return `${ctx.dataset.label}: ${ctx.parsed.y} (${pct}%)`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: { stacked: true, grid: { display: false } },
+      y: { stacked: true, beginAtZero: true, grid: { color: '#F0F0F0' } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── 3. RANK SERVIÇOS ──────────────────────────────────────────────────────────
+const servicos = [
+  { label: 'Credenciamento/Descredenciamento', val: 669 },
+  { label: 'Endereço — Cadastro Novo', val: 331 },
+  { label: 'Contrato (Locação ApolarNET)', val: 208 },
+  { label: 'Opção (Vendas Apolar NET)', val: 170 },
+  { label: 'Ajuste de Acesso — Locação', val: 167 },
+  { label: 'Ajuste de Acesso — Vendas', val: 153 },
+  { label: 'Proposta (Vendas Apolar NET)', val: 114 },
+  { label: 'CRM Sales » Problemas no CRM', val: 99 },
+  { label: 'Relatório (Locação)', val: 97 },
+  { label: 'Endereço — Ajuste no Endereço', val: 94 },
+];
+const maxVal = servicos[0].val;
+const container = document.getElementById('rankServicos');
+servicos.forEach((s, i) => {
+  const pct = Math.round((s.val / maxVal) * 100);
+  container.innerHTML += `
+    <div class="rank-item">
+      <div class="rank-num">${i+1}</div>
+      <div class="rank-bar-wrap">
+        <div class="rank-label" title="${s.label}">${s.label}</div>
+        <div class="rank-bar-bg">
+          <div class="rank-bar-fill" style="width:${pct}%"></div>
+        </div>
+      </div>
+      <div class="rank-val">${s.val}</div>
+    </div>`;
+});
+
+// ── 4. TOP 5 SERVIÇOS EM BUGS CONFIRMADOS ─────────────────────────────────────
+new Chart(document.getElementById('chartTags'), {
+  type: 'pie',
+  data: {
+    labels: ['Contrato (Locação)', 'Proposta (Vendas)', 'Ajuste Acesso (Locação)', 'Opção (Vendas)', 'CRM Problemas', 'Outros'],
+    datasets: [{
+      data: [146, 72, 70, 67, 64, 718],
+      backgroundColor: [RED, ORANGE, YELLOW, BLUE_MID, GREEN, GRAY],
+      borderWidth: 2,
+      borderColor: '#fff',
+      hoverOffset: 6,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: { boxWidth: 10, padding: 8, font: { size: 9 } }
+      },
+      tooltip: {
+        callbacks: {
+          label: ctx => {
+            const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
+            const pct = Math.round((ctx.parsed/total)*100);
+            return ` ${ctx.label}: ${ctx.parsed} bugs (${pct}%)`;
+          }
+        }
+      }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── TOP 3 SERVIÇOS POR MÊS — colunas paralelas ───────────────────────────────
+const top3Nomes = {
+  rank1: ['Credenciamento/Descredenciamento','Credenciamento/Descredenciamento','Credenciamento/Descredenciamento','Credenciamento/Descredenciamento','Credenciamento/Descredenciamento','Credenciamento/Descredenciamento','Endereço - Cadastro Novo','Credenciamento/Descredenciamento'],
+  rank2: ['Locação » Contrato','Endereço - Cadastro Novo','Endereço - Cadastro Novo','Endereço - Cadastro Novo','Endereço - Cadastro Novo','Endereço - Cadastro Novo','Credenciamento/Descredenciamento','Descredenciamento de Corretor'],
+  rank3: ['Endereço - Cadastro Novo','Vendas » Opção','Locação » Contrato','Locação » Contrato','Ajuste de Acesso (Vendas)','Vendas » Opção','Ajuste de Acesso (Vendas)','Endereço - Cadastro Novo'],
+};
+new Chart(document.getElementById('chartTop3Mensal'), {
+  type: 'bar',
+  data: {
+    labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto'],
+    datasets: [
+      { label: '1º Lugar', data: [67, 89, 79, 79, 89, 75, 74, 125], backgroundColor: BLUE_DARK, borderRadius: 5 },
+      { label: '2º Lugar', data: [30, 36, 51, 43, 27, 41, 66, 36], backgroundColor: BLUE_MID, borderRadius: 5 },
+      { label: '3º Lugar', data: [28, 28, 47, 29, 24, 25, 27, 31], backgroundColor: '#8BC4F0', borderRadius: 5 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 10 } } },
+      tooltip: {
+        callbacks: {
+          title: (items) => items[0].label,
+          label: (ctx) => {
+            const rankKey = ['rank1','rank2','rank3'][ctx.datasetIndex];
+            const nome = top3Nomes[rankKey][ctx.dataIndex];
+            return `${ctx.dataset.label}: ${nome} — ${ctx.parsed.y} tickets`;
+          }
+        }
+      }
+    },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#F0F0F0' } },
+      x: { grid: { display: false } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── TOP 3 SERVIÇOS POR CATEGORIA ──────────────────────────────────────────────
+const catServicosDados = {
+  ano: {
+    bug: { labels: ['Contrato', 'Opção', 'Proposta'], data: [172, 94, 86], total: '1.398' },
+    solicitacao: { labels: ['Credenciamento', 'Endereço - Cadastro', 'Ajuste de Acesso'], data: [669, 329, 87], total: '2.476' },
+    melhoria: { labels: ['Sugestões (Vendas)', 'Sugestões (CRM Sales)', 'Sugestões (Portal)'], data: [29, 28, 19], total: '172' },
+    duvida: { labels: ['Opção', 'CRM Problemas', 'Pesquisa de Imóveis'], data: [14, 10, 6], total: '103' },
+  },
+  mes: {
+    bug: { labels: ['Opção', 'Ajuste Acesso Locação', 'Ajuste Acesso Vendas'], data: [13, 13, 12], total: '165' },
+    solicitacao: { labels: ['Credenciamento', 'Descredenciamento Corretor', 'Endereço - Cadastro'], data: [125, 36, 31], total: '371' },
+    melhoria: { labels: ['Melhorias (Área Cliente)', 'Proposta', 'Sugestões (Locação)'], data: [3, 1, 1], total: '9' },
+    duvida: { labels: ['Credenciamento Corretor', 'Análise Carteira', 'Cadastro Franquia'], data: [1, 1, 1], total: '4' },
+  }
+};
+
+const pillsCatDados = {
+  ano: {
+    Bug: [['CRM Problemas',83],['Ajuste Acesso Locação',77],['Ajuste Acesso Vendas',73]],
+    Solicitacao: [['Endereço - Ajuste',86],['Ajuste Acesso Vendas',77],['Relatório',69]],
+    Melhoria: [['Proposta',9],['Área do Cliente',8],['Sugestões (Locação)',7]],
+    Duvida: [['Proposta',6],['CRM Ajustes',5],['Integração de Leads',4]],
+  },
+  mes: {
+    Bug: [['CRM Ajustes',10],['Proposta',10],['Site Fora do Ar',7]],
+    Solicitacao: [['Endereço - Ajuste',14],['Entrada Novo Colaborador',9],['Opção',8]],
+    Melhoria: [['Sugestões (Portal)',1],['CRM HUB',1],['Informações Incorretas',1]],
+    Duvida: [['Imóvel não Anunciado',1]],
+  }
+};
+
+const assuntoLiderDados = {
+  ano: {
+    Bug: 'Assunto mais comum no líder (Contrato): "Cadastro de Ramo de Atividade" (5x)',
+    Solicitacao: 'Assunto mais comum no líder (Credenciamento): "Sol. de Descredenciamento" (363x)',
+    Melhoria: 'Sem assunto recorrente no líder — pautas variadas e pontuais',
+    Duvida: 'Sem assunto recorrente no líder — cada ticket com uma referência distinta',
+  },
+  mes: {
+    Bug: 'Sem assunto recorrente no líder (Opção/Ajuste de Acesso) — cada ticket com um relato distinto',
+    Solicitacao: 'Assunto mais comum no líder (Credenciamento): "Sol. de Descredenciamento" (108x)',
+    Melhoria: 'Sem assunto recorrente no líder — volume baixo (3 tickets)',
+    Duvida: 'Sem assunto recorrente — apenas 4 tickets no mês, todos distintos',
+  }
+};
+
+const coresCat = {
+  Bug: { bg: 'rgba(192,0,0,0.75)', pill: '#FCE4E4', text: 'var(--red)' },
+  Solicitacao: { bg: 'rgba(46,117,182,0.75)', pill: 'var(--blue-light)', text: 'var(--blue-mid)' },
+  Melhoria: { bg: 'rgba(240,165,0,0.8)', pill: 'var(--yellow-lt)', text: '#855900' },
+  Duvida: { bg: 'rgba(55,86,35,0.75)', pill: 'var(--green-lt)', text: 'var(--green)' },
+};
+
+function criarChartCatServicos(canvasId, labels, data, cor) {
+  return new Chart(document.getElementById(canvasId), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Tickets',
+        data: data,
+        backgroundColor: cor,
+        borderRadius: 5,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { font: { size: 8 } } },
+        y: { grid: { display: false }, ticks: { font: { size: 8 } } }
+      },
+      animation: { duration: 800 }
+    }
+  });
+}
+
+const chartCatServicosBug = criarChartCatServicos('chartCatServicosBug', catServicosDados.ano.bug.labels, catServicosDados.ano.bug.data, coresCat.Bug.bg);
+const chartCatServicosSolicitacao = criarChartCatServicos('chartCatServicosSolicitacao', catServicosDados.ano.solicitacao.labels, catServicosDados.ano.solicitacao.data, coresCat.Solicitacao.bg);
+const chartCatServicosMelhoria = criarChartCatServicos('chartCatServicosMelhoria', catServicosDados.ano.melhoria.labels, catServicosDados.ano.melhoria.data, coresCat.Melhoria.bg);
+const chartCatServicosDuvida = criarChartCatServicos('chartCatServicosDuvida', catServicosDados.ano.duvida.labels, catServicosDados.ano.duvida.data, coresCat.Duvida.bg);
+
+const catChartsMap = { Bug: chartCatServicosBug, Solicitacao: chartCatServicosSolicitacao, Melhoria: chartCatServicosMelhoria, Duvida: chartCatServicosDuvida };
+const catKeyMap = { Bug: 'bug', Solicitacao: 'solicitacao', Melhoria: 'melhoria', Duvida: 'duvida' };
+
+function filtrarCatServicos(modo) {
+  const btnAno = document.getElementById('btnCatServicosAno');
+  const btnMes = document.getElementById('btnCatServicosMes');
+  const periodoLabel = document.getElementById('catServicosPeriodoLabel');
+
+  if (modo === 'ano') {
+    btnAno.style.background = 'var(--blue-dark)'; btnAno.style.color = '#fff';
+    btnMes.style.background = 'transparent'; btnMes.style.color = 'var(--text-mid)';
+    periodoLabel.textContent = '\u00A0· Jan–Ago 2026';
+  } else {
+    btnMes.style.background = 'var(--blue-dark)'; btnMes.style.color = '#fff';
+    btnAno.style.background = 'transparent'; btnAno.style.color = 'var(--text-mid)';
+    periodoLabel.textContent = '\u00A0· Agosto 2026';
+  }
+
+  ['Bug','Solicitacao','Melhoria','Duvida'].forEach(cat => {
+    const key = catKeyMap[cat];
+    const dados = catServicosDados[modo][key];
+    const chart = catChartsMap[cat];
+    chart.data.labels = dados.labels;
+    chart.data.datasets[0].data = dados.data;
+    chart.update();
+
+    document.getElementById('catTag' + cat).textContent = dados.total;
+
+    const pillsContainer = document.getElementById('pills' + cat);
+    const cor = coresCat[cat];
+    pillsContainer.innerHTML = pillsCatDados[modo][cat].map(([label, count]) =>
+      `<div class="pill" style="background:${cor.pill};color:${cor.text};font-size:9px">${label} <span class="pill-count">${count}</span></div>`
+    ).join('');
+
+    document.getElementById('assuntoLider' + cat).textContent = assuntoLiderDados[modo][cat];
+  });
+}
+
+// ── AJUSTE BD — TOP SERVIÇOS ──────────────────────────────────────────────────
+const ajusteBDServicosDados = {
+  ano: {
+    labels: ['Contrato (Locação)', 'Sacara » Everest', 'Proposta (Vendas)', 'Recibo Aluguel (Sacara)',
+             'Relatório (Locação)', 'Recibo Aluguel (Locação)', 'Opção (Vendas)', 'Ajuste de Acesso'],
+    data: [142, 61, 52, 41, 37, 33, 25, 23],
+  },
+  mes: {
+    labels: ['Proposta', 'Sacara » Everest', 'Contrato', 'Ajuste de Acesso', 'Recibo Aluguel (Sacara)', 'Sacara » ADM'],
+    data: [8, 8, 4, 3, 3, 3],
+  }
+};
+const chartAjusteBDServicos = new Chart(document.getElementById('chartAjusteBDServicos'), {
+  type: 'bar',
+  data: {
+    labels: ajusteBDServicosDados.ano.labels,
+    datasets: [{
+      label: 'Tickets Ajuste BD',
+      data: ajusteBDServicosDados.ano.data,
+      backgroundColor: [
+        '#F0A500','#F5B833','#F5C85A','#F5D37A',
+        '#F5DC96','#F5E4B0','#F5EBC8','#FAF3E0'
+      ],
+      borderRadius: 5,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { beginAtZero: true, grid: { color: '#F0F0F0' } },
+      y: { grid: { display: false }, ticks: { font: { size: 9 } } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── AJUSTE BD — EVOLUÇÃO MENSAL ───────────────────────────────────────────────
+const ajusteBDMensalDados = {
+  ano: {
+    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago'],
+    data: [76, 77, 98, 66, 84, 77, 66, 37],
+    colors: [YELLOW, YELLOW, '#E59400', '#F5D37A', YELLOW, YELLOW, '#F5D37A', '#F5D37A'],
+  },
+  mes: {
+    labels: ['Agosto'],
+    data: [37],
+    colors: ['#F5D37A'],
+  }
+};
+const chartAjusteBDMensal = new Chart(document.getElementById('chartAjusteBDMensal'), {
+  type: 'bar',
+  data: {
+    labels: ajusteBDMensalDados.ano.labels,
+    datasets: [{
+      label: 'Ajuste BD',
+      data: ajusteBDMensalDados.ano.data,
+      backgroundColor: ajusteBDMensalDados.ano.colors,
+      borderRadius: 6,
+      barThickness: 32,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, max: 120, grid: { color: '#F0F0F0' } },
+      x: { grid: { display: false } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+const ajusteBDAssuntosDados = {
+  ano: {
+    banner: 'Ajuste BD significa que o suporte precisou corrigir dados <strong>diretamente no banco de dados</strong> — sem solução pela interface do sistema. O volume caiu bastante em agosto (37, o menor do período) — indício de que o módulo de Contrato, principal responsável pelo Ajuste BD (142 tickets, 24,4% de todos os Ajustes BD), pode estar estabilizando.',
+    pills: [
+      ['Reprocessar COBST', 7],
+      ['Imóveis Locados', 5],
+      ['Integração Cheques Everest', 5],
+      ['Cadastro de Ramo de Atividade', 5],
+      ['Cadastro de Profissão', 3],
+      ['URGENTE - Relatório', 3],
+      ['Erro Geração de Extrato Mensal', 3],
+      ['Alteração de Fiança', 3],
+    ]
+  },
+  mes: {
+    banner: 'Em agosto, os 37 tickets de Ajuste BD (o menor volume mensal do ano) ficaram concentrados em correções pontuais de Proposta (revogação/produção travada) e Recibo de Aluguel — sem nenhum assunto isolado dominante.',
+    pills: [
+      ['Recibo de Aluguel', 6],
+      ['Proposta (Revogação/Produção)', 5],
+      ['Everest/Caixa', 3],
+      ['Alteração de Corretor Responsável', 2],
+      ['Integração Firefly/WhatsApp', 2],
+    ]
+  }
+};
+
+function renderAjusteBDPills(modo) {
+  const container = document.getElementById('ajusteBDPills');
+  container.innerHTML = ajusteBDAssuntosDados[modo].pills.map(([label, count]) =>
+    `<div class="pill" style="background:var(--yellow-lt);color:#855900">${label} <span class="pill-count">${count}</span></div>`
+  ).join('');
+  document.getElementById('ajusteBDBannerTexto').innerHTML = ajusteBDAssuntosDados[modo].banner;
+}
+
+// ── FILTRO ANO / ÚLTIMO MÊS — Análise Ajuste BD ───────────────────────────────
+function filtrarAjusteBD(modo) {
+  const btnAno = document.getElementById('btnAjusteBDAno');
+  const btnMes = document.getElementById('btnAjusteBDMes');
+  const totalLabel = document.getElementById('ajusteBDTotalLabel');
+  const servicosTag = document.getElementById('ajusteBDServicosTag');
+  const mensalTag = document.getElementById('ajusteBDMensalTag');
+
+  if (modo === 'ano') {
+    btnAno.style.background = 'var(--blue-dark)'; btnAno.style.color = '#fff';
+    btnMes.style.background = 'transparent'; btnMes.style.color = 'var(--text-mid)';
+    totalLabel.textContent = '— 581 tickets (14,0% do total)';
+    servicosTag.textContent = 'Intervenção direta no banco';
+    servicosTag.style.background = 'var(--blue-light)'; servicosTag.style.color = 'var(--blue-mid)';
+    mensalTag.textContent = 'Jan–Ago';
+    mensalTag.style.background = 'var(--blue-light)'; mensalTag.style.color = 'var(--blue-mid)';
+
+    chartAjusteBDServicos.data.labels = ajusteBDServicosDados.ano.labels;
+    chartAjusteBDServicos.data.datasets[0].data = ajusteBDServicosDados.ano.data;
+    chartAjusteBDServicos.update();
+
+    chartAjusteBDMensal.data.labels = ajusteBDMensalDados.ano.labels;
+    chartAjusteBDMensal.data.datasets[0].data = ajusteBDMensalDados.ano.data;
+    chartAjusteBDMensal.data.datasets[0].backgroundColor = ajusteBDMensalDados.ano.colors;
+    chartAjusteBDMensal.options.scales.y.max = 120;
+    chartAjusteBDMensal.update();
+    renderAjusteBDPills('ano');
+  } else {
+    btnMes.style.background = 'var(--blue-dark)'; btnMes.style.color = '#fff';
+    btnAno.style.background = 'transparent'; btnAno.style.color = 'var(--text-mid)';
+    totalLabel.textContent = '— 37 tickets em Agosto (6,7% dos tickets do mês)';
+    servicosTag.textContent = 'Agosto 2026';
+    servicosTag.style.background = 'var(--yellow-lt)'; servicosTag.style.color = '#855900';
+    mensalTag.textContent = 'Agosto 2026';
+    mensalTag.style.background = 'var(--yellow-lt)'; mensalTag.style.color = '#855900';
+
+    chartAjusteBDServicos.data.labels = ajusteBDServicosDados.mes.labels;
+    chartAjusteBDServicos.data.datasets[0].data = ajusteBDServicosDados.mes.data;
+    chartAjusteBDServicos.update();
+
+    chartAjusteBDMensal.data.labels = ajusteBDMensalDados.mes.labels;
+    chartAjusteBDMensal.data.datasets[0].data = ajusteBDMensalDados.mes.data;
+    chartAjusteBDMensal.data.datasets[0].backgroundColor = ajusteBDMensalDados.mes.colors;
+    chartAjusteBDMensal.options.scales.y.max = 80;
+    chartAjusteBDMensal.update();
+    renderAjusteBDPills('mes');
+  }
+}
+
+// ── 5. BUGS por mês ───────────────────────────────────────────────────────────
+new Chart(document.getElementById('chartBugs'), {
+  type: 'line',
+  data: {
+    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago'],
+    datasets: [{
+      label: 'Bugs confirmados',
+      data: [143, 134, 216, 116, 116, 133, 135, 144],
+      borderColor: RED,
+      backgroundColor: 'rgba(192,0,0,0.08)',
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: RED,
+      pointRadius: 5,
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#F0F0F0' } },
+      x: { grid: { display: false } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── 6. ORIENTAÇÃO por mês ─────────────────────────────────────────────────────
+new Chart(document.getElementById('chartOrientacao'), {
+  type: 'line',
+  data: {
+    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago'],
+    datasets: [{
+      label: 'Orientação',
+      data: [33, 53, 80, 47, 44, 50, 75, 38],
+      borderColor: BLUE_MID,
+      backgroundColor: 'rgba(46,117,182,0.08)',
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: BLUE_MID,
+      pointRadius: 5,
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#F0F0F0' } },
+      x: { grid: { display: false } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── 7. TREINAMENTO por mês ────────────────────────────────────────────────────
+new Chart(document.getElementById('chartTreinamento'), {
+  type: 'line',
+  data: {
+    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago'],
+    datasets: [{
+      label: 'Treinamento',
+      data: [7, 10, 17, 8, 6, 3, 4, 0],
+      borderColor: GREEN,
+      backgroundColor: 'rgba(55,86,35,0.08)',
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: GREEN,
+      pointRadius: 5,
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#F0F0F0' } },
+      x: { grid: { display: false } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── BUG AGOSTO — top serviços ─────────────────────────────────────────────────
+new Chart(document.getElementById('chartBugsJun'), {
+  type: 'bar',
+  data: {
+    labels: ['Opção', 'Ajuste Acesso Locação', 'Ajuste Acesso Vendas',
+             'CRM Ajustes', 'Proposta', 'Portal Fora do Ar'],
+    datasets: [{
+      label: 'Bugs confirmados — Agosto',
+      data: [11, 11, 10, 9, 8, 6],
+      backgroundColor: 'rgba(192,0,0,0.75)',
+      borderRadius: 5,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { stepSize: 2 } },
+      y: { grid: { display: false }, ticks: { font: { size: 9 } } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── ORIENTAÇÃO AGOSTO — top serviços ──────────────────────────────────────────
+new Chart(document.getElementById('chartOrientacaoJun'), {
+  type: 'bar',
+  data: {
+    labels: ['Opção de Venda', 'Integração de Leads', 'Ajuste de Acesso',
+             'Distribuição de Leads', 'CRM Ajustes'],
+    datasets: [{
+      label: 'Orientação — Agosto',
+      data: [5, 3, 3, 3, 2],
+      backgroundColor: 'rgba(46,117,182,0.75)',
+      borderRadius: 5,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { stepSize: 2 } },
+      y: { grid: { display: false }, ticks: { font: { size: 9 } } }
+    },
+    animation: { duration: 800 }
+  }
+});
+
+// ── TAB SWITCHING ─────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'auditoria' && !window._auditChartsBuilt) {
+    window._auditChartsBuilt = true;
+    setTimeout(buildAuditCharts, 50);
+  }
+}
+
+// ── AUDIT CHARTS (lazy — só renderiza ao abrir a aba) ────────────────────────
+function buildAuditCharts() {
+  const versoes   = ['10.2', '10.3', '10.4', '10.5', '10.6', '10.6 › A', '10.6 › B', '10.6 › C'];
+  const aprovacao = [94.12, 81.44, 80.58, 66.67, 67.80, 66.67, 70.00, 66.67];
+  const melhoria  = [63, 167, 92, 49, 22, 7, 10, 5];
+  const bugs      = [11, 27, 10, 14, 33, 6, 9, 18];
+  const projeto   = [0, 0, 1, 1, 4, 2, 1, 1];
+
+  const apvColors = aprovacao.map(v =>
+    v >= 80 ? '#375623' : v >= 70 ? '#C55A11' : '#C00000'
+  );
+  const apvBorder = versoes.map((_, i) => i >= 4 ? '#1F3864' : 'transparent');
+  const apvBorderW = versoes.map((_, i) => i >= 4 ? 2 : 0);
+
+  const groupBgPlugin = {
+    id: 'groupBg',
+    beforeDraw(chart) {
+      const {ctx, chartArea, scales} = chart;
+      const xScale = scales.x;
+      const x0 = xScale.getPixelForValue(3.5);
+      const x1 = xScale.getPixelForValue(7.5);
+      ctx.save();
+      ctx.fillStyle = 'rgba(31,56,100,0.06)';
+      ctx.fillRect(x0, chartArea.top - 8, x1 - x0, chartArea.bottom - chartArea.top + 8);
+      ctx.restore();
+    },
+    afterDraw(chart) {
+      const {ctx, chartArea, scales} = chart;
+      const xScale = scales.x;
+      const x0 = xScale.getPixelForValue(3.5);
+      const x1 = xScale.getPixelForValue(7.5);
+      const xMid = (x0 + x1) / 2;
+      ctx.save();
+      ctx.font = '700 9px Montserrat, sans-serif';
+      ctx.fillStyle = '#1F3864';
+      ctx.textAlign = 'center';
+      ctx.fillText('◂ Grupo Versão 10.6 ▸', xMid, chartArea.top - 2);
+      ctx.restore();
+    }
+  };
+
+  const chart1 = new Chart(document.getElementById('chartAprovacao'), {
+    type: 'bar',
+    data: {
+      labels: versoes,
+      datasets: [{
+        label: '% de aprovação',
+        data: aprovacao,
+        backgroundColor: apvColors,
+        borderColor: apvBorder,
+        borderWidth: apvBorderW,
+        borderRadius: 6,
+        barThickness: 34,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: ctx => `${ctx.parsed.y.toFixed(1)}% aprovados` }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true, max: 100,
+          grid: { color: '#F0F0F0' },
+          ticks: { callback: v => v + '%' }
+        },
+        x: { grid: { display: false }, ticks: { font: { size: 9 } } }
+      },
+      layout: { padding: { top: 16 } },
+      animation: { duration: 800 }
+    },
+    plugins: [groupBgPlugin]
+  });
+
+  const chart2 = new Chart(document.getElementById('chartCategoriaAudit'), {
+    type: 'bar',
+    data: {
+      labels: versoes,
+      datasets: [
+        { label: 'Melhoria', data: melhoria, backgroundColor: '#2E75B6', borderRadius: 3 },
+        { label: 'Bug',      data: bugs,     backgroundColor: '#C00000', borderRadius: 3 },
+        { label: 'Projeto',  data: projeto,  backgroundColor: '#375623', borderRadius: 3 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 10 } } }
+      },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { size: 9 } } },
+        y: { stacked: true, beginAtZero: true, grid: { color: '#F0F0F0' } }
+      },
+      layout: { padding: { top: 16 } },
+      animation: { duration: 800 }
+    },
+    plugins: [groupBgPlugin]
+  });
+
+  setTimeout(() => { chart1.resize(); chart2.resize(); }, 100);
+}
+</script>
+</body>
+</html>
